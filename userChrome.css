@@ -1,0 +1,4 @@
+.tabbrowser-tab.vim-cur .tab-background {
+  outline: 2px solid #7aa2f7 !important;
+  outline-offset: -2px;
+}
