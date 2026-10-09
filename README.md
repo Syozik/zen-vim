@@ -1,6 +1,6 @@
 # zen-vim
 
-Vim motions for Zen Browser tabs and splits, via [fx-autoconfig](https://github.com/MrOtherGuy/fx-autoconfig).
+Vim motions for Zen Browser tabs and splits, using [fx-autoconfig](https://github.com/MrOtherGuy/fx-autoconfig).
 
 ### Install
 
@@ -17,7 +17,9 @@ Vim motions for Zen Browser tabs and splits, via [fx-autoconfig](https://github.
 
 3. Restart Zen. If scripts don't load, clear the startup cache from `about:support` ("Clear startup cache...").
 
-## Keys
+*Note*: most likely (happened on my 2 machines) zen won't apply styles from userChrome.css if your `toolkit.legacyUserProfileCustomizations.stylesheets` is false. You may set it to true in about:config.
+
+### Keys
 
 | Key | Action |
 |-----|--------|
@@ -25,6 +27,7 @@ Vim motions for Zen Browser tabs and splits, via [fx-autoconfig](https://github.
 | `Ctrl-W h/j/k/l` | Focus split in that direction |
 | `Ctrl-W h` (no split to the left) | Enter tab browsing mode |
 | `Ctrl-W c` | Close current tab |
+| `Ctrl-W v` | Open current tab in the split view |
 
 In tab browsing mode:
 
@@ -35,6 +38,7 @@ In tab browsing mode:
 | `Enter` | Select tab |
 | `d` | Close tab |
 | `v` | Split tab with current (or unsplit if already in a split) |
+| `g` | Glance tab |
 | `Escape` | Exit |
 
-To be added ...
+More to be added ...
