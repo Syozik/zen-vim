@@ -2,6 +2,11 @@
 
 Vim motions for Zen Browser tabs and splits, using [fx-autoconfig](https://github.com/MrOtherGuy/fx-autoconfig).
 
+This works best when combined with vim motions extension for pages: https://github.com/philc/vimium
+
+Unfortunately, the above mentioned extension works only with pages, so you can't really interact with
+the browser UI with it, that's why I needed this script that closes that gap.
+
 ### Install
 
 1. Clone this repo as the `chrome` folder of your Zen profile (`about:profiles` shows the path):
