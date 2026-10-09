@@ -31,16 +31,40 @@
             tabs = gBrowser.visibleTabs;
         };
 
+        const focusPane = (dx, dy) => {
+            const split = gZenViewSplitter._data[gZenViewSplitter.currentView];
+            if (!split || browsingTabs) return false;
+            const center = (r) => [r.left + r.width / 2, r.top + r.height / 2];
+            const [x, y] = center(gBrowser.selectedBrowser.getBoundingClientRect());
+            let best = null, bestDist = Infinity;
+            for (const tab of split.tabs) {
+                const [tx, ty] = center(tab.linkedBrowser.getBoundingClientRect());
+                let correctDirection = (tx - x) * dx > 0 || (ty - y) * dy > 0;
+                const dist = Math.hypot(tx - x, ty - y);
+                if (correctDirection && dist < bestDist) {
+                    [best, bestDist] = [tab, dist];
+                }
+            }
+            if (!best) return false;
+            gBrowser.selectedTab = best;
+            best.linkedBrowser.focus();
+            return true;
+        };
+
         const h = () => {
+            if (focusPane(-1, 0)) return;
             browsingTabs = true;
             mark(gBrowser.selectedTab);
         };
         const l = () => {
+            if (focusPane(1, 0)) return;
             exit();
             browsingTabs = false;
         };
+        const j = () => focusPane(0, 1);
+        const k = () => focusPane(0, -1);
         const c = () => closeTab();
-        const postCtrlWHandlers = { h, l, c };
+        const postCtrlWHandlers = { h, l, j, k, c };
 
         if (e.ctrlKey && e.key === "w") {
             stop();
@@ -65,14 +89,23 @@
         let tabs = gBrowser.visibleTabs;
         const i = tabs.indexOf(currentTab);
 
-        const goToNext = () => mark(tabs[Math.min(i + 1, tabs.length - 1)]);
-        const goToPrev = () => mark(tabs[Math.max(i - 1, 0)]);
+        const goTo = (idx) => mark(tabs[Math.max(0, Math.min(idx, tabs.length - 1))]);
 
         const d = () => {
             const start = tabs.indexOf(gBrowser.selectedTab);
-            closeTab(currentTab);
-            if (start > i) goToPrev();
-            else goToNext();
+            closeTab(currentTab, true);
+            if (start > i) goTo(i - 1);
+            else goTo(i);
+        };
+
+        const v = () => {
+            if (currentTab.group && currentTab.group.hasAttribute("split-view-group")) {
+                gZenViewSplitter.removeTabFromGroup(currentTab);
+            } else {
+                const other = currentTab === gBrowser.selectedTab ? gBrowser.duplicateTab(currentTab) : currentTab;
+                gZenViewSplitter.splitTabs([gBrowser.selectedTab, other], undefined, 1);
+            }
+            exit();
         };
 
         const Enter = () => {
@@ -82,8 +115,11 @@
 
         const tabMovementHandlers = {
             d,
-            j: goToNext,
-            k: goToPrev,
+            v,
+            l: () => goTo(i + 1),
+            j: () => goTo(i + 1),
+            k: () => goTo(i - 1),
+            h: () => goTo(i - 1),
             Enter,
             Escape: exit,
         };
