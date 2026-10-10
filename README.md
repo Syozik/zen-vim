@@ -7,6 +7,8 @@ This works best when combined with vim motions extension for pages: https://gith
 Unfortunately, the above mentioned extension works only with pages, so you can't really interact with
 the browser UI with it, that's why I needed this script that closes that gap.
 
+https://github.com/user-attachments/assets/9e922b98-6b9d-4f98-b425-3985986a3a22
+
 ### Install
 
 1. Clone this repo as the `chrome` folder of your Zen profile (`about:profiles` shows the path):
@@ -43,7 +45,7 @@ In tab browsing mode:
 | `Enter` | Select tab |
 | `r` | Rename tab |
 | `d` | Close tab |
-| `d` | Reopen previous closed tab |
+| `u` | Reopen previous closed tab |
 | `v` | Split tab with current (or unsplit if already in a split) |
 | `g` | Glance tab |
 | `Escape` | Exit |
