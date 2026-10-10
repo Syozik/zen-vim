@@ -17,10 +17,10 @@ https://github.com/user-attachments/assets/9e922b98-6b9d-4f98-b425-3985986a3a22
    git clone <repo-url> ~/.config/zen/<profile>/chrome
    ```
 
-2. Copy the two loader files from fx-autoconfig's `program/` folder into the Zen install directory (e.g. `/opt/zen-browser-bin`):
+2. Move the two loader files from `program/` folder into the Zen install directory (e.g. `/opt/zen-browser-bin`):
 
    - `config.js` next to the `zen-bin` executable
-   - `defaults/pref/config-prefs.js`
+   - `config-prefs.js` inside of the `defaults/pref` folder
 
 3. Restart Zen. If scripts don't load, clear the startup cache from `about:support` ("Clear startup cache...").
 
