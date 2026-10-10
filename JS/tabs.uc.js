@@ -4,6 +4,7 @@
     let ctrlWPressed = null;
     let timeout = null;
     let glanceOwner = null;
+    let glancedTabIndex = null;
 
     function mark(tab) {
         currentTab?.classList.remove("vim-cur");
@@ -24,7 +25,7 @@
     }
 
     async function dismissGlance() {
-        const peeked = gBrowser.selectedTab;
+        const glancedTab = gBrowser.selectedTab;
         const prevMotionOverrideValue = gReduceMotionOverride;
         gReduceMotionOverride = true;
         try {
@@ -33,12 +34,14 @@
             gReduceMotionOverride = prevMotionOverrideValue;
         }
         if (!glanceOwner) return;
-        const peekedPanel = peeked.linkedBrowser?.closest(".browserSidebarContainer");
+        const peekedPanel = glancedTab.linkedBrowser?.closest(".browserSidebarContainer");
         [...document.querySelectorAll("#tabbrowser-tabpanels > .deck-selected")]
             .filter((panel) => panel !== peekedPanel)
             .forEach((panel) => panel.classList.remove("deck-selected"));
+        gBrowser.moveTabTo(glancedTab, { tabIndex: glancedTabIndex });
         gBrowser.selectedTab = glanceOwner;
         glanceOwner = null;
+        glancedTabIndex = null;
     }
 
     function focusPane(dx, dy) {
@@ -92,7 +95,12 @@
             clearTimeout(timeout);
         }
 
-        if (focus === "tab") {
+        if (document.getElementById("tab-label-input")) {
+            return;
+        }
+        if (focus === "renaming") {
+            if (e.key === "Enter") setTimeout(exit, 0);
+        } else if (focus === "tab") {
             const h = () => {
                 if (focusPane(-1, 0)) return;
                 focus = "sidebar";
@@ -148,7 +156,6 @@
             const d = () => {
                 const start = tabs.indexOf(gBrowser.selectedTab);
                 closeTab(currentTab, true);
-                console.log(start, i, tabs.length);
                 if (start > i) goTo(i - 1);
                 else goTo(i);
             };
@@ -174,8 +181,21 @@
                 }
                 if (currentTab === gBrowser.selectedTab) return;
                 glanceOwner = gBrowser.selectedTab;
+                glancedTabIndex = currentTab.index;
                 await gZenGlanceManager.openGlance({}, currentTab, glanceOwner);
                 exit("glance");
+            };
+
+            const r = () => {
+                currentTab
+                    .querySelector(".tab-label-container")
+                    .dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+            };
+
+            const u = () => {
+                const currentTab = gBrowser.selectedTab;
+                SessionWindowUI.undoCloseTab(window);
+                gBrowser.selectedTab = currentTab;
             };
 
             const Enter = async () => {
@@ -187,12 +207,14 @@
                 d,
                 v,
                 l,
+                r,
+                g,
+                u,
+                Enter,
+                Escape: exit,
                 j: () => goTo(i + 1),
                 k: () => goTo(i - 1),
                 h: () => goTo(i - 1),
-                g,
-                Enter,
-                Escape: exit,
             };
 
             if (e.key in sidebarMovementHandlers) {

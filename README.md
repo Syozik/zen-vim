@@ -41,7 +41,9 @@ In tab browsing mode:
 | `j` / `l` | Next tab |
 | `k` / `h` | Previous tab |
 | `Enter` | Select tab |
+| `r` | Rename tab |
 | `d` | Close tab |
+| `d` | Reopen previous closed tab |
 | `v` | Split tab with current (or unsplit if already in a split) |
 | `g` | Glance tab |
 | `Escape` | Exit |
