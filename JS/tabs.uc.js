@@ -114,8 +114,17 @@
                 const copy = gBrowser.duplicateTab(gBrowser.selectedTab);
                 gZenViewSplitter.splitTabs([gBrowser.selectedTab, copy], undefined, 1);
             };
+            const m = async () => {
+                if (gBrowser.selectedTab.group.hasAttribute("split-view-group")) {
+                    const tab = gBrowser.selectedTab;
+                    await gZenViewSplitter.removeTabFromGroup(tab, undefined, {
+                        forUnsplit: true,
+                    });
+                    gBrowser.selectedTab = tab;
+                }
+            };
 
-            const handlers = { h, l, j, k, c, v };
+            const handlers = { h, l, j, k, c, v, m };
 
             if (ctrlWPressed) {
                 if (e.key in handlers) {

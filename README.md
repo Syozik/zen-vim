@@ -36,6 +36,7 @@ https://github.com/user-attachments/assets/9e922b98-6b9d-4f98-b425-3985986a3a22
 | `Ctrl-W h` (no split to the left) | Enter tab browsing mode |
 | `Ctrl-W c` | Close current tab |
 | `Ctrl-W v` | Open current tab in the split view |
+| `Ctrl-W m` | Maximize current tab (if in the split view) |
 
 In tab browsing mode:
 
