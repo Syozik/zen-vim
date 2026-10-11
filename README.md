@@ -15,7 +15,7 @@ https://github.com/user-attachments/assets/9e922b98-6b9d-4f98-b425-3985986a3a22
 1. Clone this repo as the `chrome` folder of your Zen profile (`about:profiles` shows the path):
 
    ```sh
-   git clone github.com/Syozik/zen-vim.git ~/.config/zen/<profile>/chrome
+   git clone https://github.com/Syozik/zen-vim.git ~/.config/zen/<profile>/chrome
    ```
 
 2. Move the two loader files from `program/` folder into the Zen install directory (e.g. `/opt/zen-browser-bin`):
