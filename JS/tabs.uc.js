@@ -20,14 +20,14 @@
             gZenCompactModeManager.toggleSidebar();
             sidebarHidden = null;
         }
-        document.removeEventListener("click", exit);
+        document.removeEventListener("click", exitOnClick);
         gBrowser.selectedBrowser.focus();
     }
 
+    const exitOnClick = () => exit();
+
     function getActiveGlance() {
-        return gBrowser.selectedTab.hasAttribute("zen-glance-tab")
-            ? gBrowser.selectedTab
-            : null;
+        return gBrowser.selectedTab.hasAttribute("zen-glance-tab") ? gBrowser.selectedTab : null;
     }
 
     async function dismissGlance() {
@@ -40,9 +40,7 @@
             gReduceMotionOverride = prevMotionOverrideValue;
         }
         if (!glanceOwner) return;
-        const peekedPanel = glancedTab.linkedBrowser?.closest(
-            ".browserSidebarContainer",
-        );
+        const peekedPanel = glancedTab.linkedBrowser?.closest(".browserSidebarContainer");
         [...document.querySelectorAll("#tabbrowser-tabpanels > .deck-selected")]
             .filter((panel) => panel !== peekedPanel)
             .forEach((panel) => panel.classList.remove("deck-selected"));
@@ -102,23 +100,20 @@
 
         if (timeout) {
             clearTimeout(timeout);
+            timeout = null;
         }
 
         if (document.getElementById("tab-label-input")) {
             return;
         }
-        if (focus === "renaming") {
-            if (e.key === "Enter") setTimeout(exit, 0);
-        } else if (focus === "tab") {
+        if (focus === "tab") {
             const h = () => {
                 if (focusPane(-1, 0)) return;
                 focus = "sidebar";
-                document.addEventListener("click", exit);
-                const isCompactMode =
-                    document.documentElement.getAttribute("zen-compact-mode");
+                document.addEventListener("click", exitOnClick);
+                const isCompactMode = document.documentElement.getAttribute("zen-compact-mode");
                 sidebarHidden = !sidebar.hasAttribute("zen-user-show");
-                if (isCompactMode && sidebarHidden)
-                    gZenCompactModeManager.toggleSidebar();
+                if (isCompactMode && sidebarHidden) gZenCompactModeManager.toggleSidebar();
                 mark(gBrowser.selectedTab);
             };
             const l = () => focusPane(1, 0);
@@ -127,16 +122,10 @@
             const c = () => closeTab();
             const v = () => {
                 const copy = gBrowser.duplicateTab(gBrowser.selectedTab);
-                gZenViewSplitter.splitTabs(
-                    [gBrowser.selectedTab, copy],
-                    undefined,
-                    1,
-                );
+                gZenViewSplitter.splitTabs([gBrowser.selectedTab, copy], undefined, 1);
             };
             const m = async () => {
-                if (
-                    gBrowser.selectedTab.group.hasAttribute("split-view-group")
-                ) {
+                if (gBrowser.selectedTab.group.hasAttribute("split-view-group")) {
                     const tab = gBrowser.selectedTab;
                     await gZenViewSplitter.removeTabFromGroup(tab, undefined, {
                         forUnsplit: true,
@@ -154,6 +143,10 @@
                 }
             }
         } else if (focus === "glance") {
+            if (!getActiveGlance()) {
+                exit();
+                return;
+            }
             const Escape = async () => {
                 await dismissGlance();
                 exit();
@@ -173,8 +166,7 @@
 
             const i = tabs.indexOf(currentTab);
 
-            const goTo = (idx) =>
-                mark(tabs[Math.max(0, Math.min(idx, tabs.length - 1))]);
+            const goTo = (idx) => mark(tabs[Math.max(0, Math.min(idx, tabs.length - 1))]);
 
             const l = () => {
                 if (ctrlWPressed) {
@@ -193,10 +185,7 @@
             };
 
             const v = () => {
-                if (
-                    currentTab.group &&
-                    currentTab.group.hasAttribute("split-view-group")
-                ) {
+                if (currentTab.group && currentTab.group.hasAttribute("split-view-group")) {
                     gZenViewSplitter.removeTabFromGroup(currentTab, undefined, {
                         forUnsplit: true,
                     });
@@ -205,11 +194,7 @@
                         currentTab === gBrowser.selectedTab
                             ? gBrowser.duplicateTab(currentTab)
                             : currentTab;
-                    gZenViewSplitter.splitTabs(
-                        [gBrowser.selectedTab, other],
-                        undefined,
-                        1,
-                    );
+                    gZenViewSplitter.splitTabs([gBrowser.selectedTab, other], undefined, 1);
                 }
                 exit();
             };
@@ -228,9 +213,7 @@
             const r = () => {
                 currentTab
                     .querySelector(".tab-label-container")
-                    .dispatchEvent(
-                        new MouseEvent("dblclick", { bubbles: true }),
-                    );
+                    .dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
             };
 
             const u = () => {
@@ -270,4 +253,29 @@
     }
 
     window.addEventListener("keydown", onKeyDown, true);
+
+    const DEPTH_KEY = "zen-vim-depth";
+
+    function setDepth(tab, depth) {
+        if (tab.pinned) return;
+        tab.dataset.depthLevel = depth;
+        tab.style.setProperty("--depth-level", depth);
+        SessionStore.setCustomTabValue(tab, DEPTH_KEY, String(depth));
+    }
+
+    function restoreDepth(tab) {
+        setDepth(tab, parseInt(SessionStore.getCustomTabValue(tab, DEPTH_KEY)) || 0);
+    }
+
+    function onNewTabOpen(e) {
+        const parent = e.target.openerTab;
+        if (!parent) return;
+        const parentLevel = parseInt(parent.dataset.depthLevel ?? -1);
+        setDepth(e.target, parentLevel + 1);
+    }
+
+    // a little hack for now.
+    setTimeout(() => gBrowser.tabs.forEach(restoreDepth), 100);
+    gBrowser.tabContainer.addEventListener("TabOpen", onNewTabOpen);
+    gBrowser.tabContainer.addEventListener("SSTabRestoring", (e) => restoreDepth(e.target));
 })();
