@@ -20,6 +20,7 @@
             gZenCompactModeManager.toggleSidebar();
             sidebarHidden = null;
         }
+        document.removeEventListener("click", exit);
         gBrowser.selectedBrowser.focus();
     }
 
@@ -112,9 +113,10 @@
             const h = () => {
                 if (focusPane(-1, 0)) return;
                 focus = "sidebar";
+                document.addEventListener("click", exit);
                 const isCompactMode =
                     document.documentElement.getAttribute("zen-compact-mode");
-                const sidebarHidden = !sidebar.hasAttribute("zen-user-show");
+                sidebarHidden = !sidebar.hasAttribute("zen-user-show");
                 if (isCompactMode && sidebarHidden)
                     gZenCompactModeManager.toggleSidebar();
                 mark(gBrowser.selectedTab);
