@@ -1,10 +1,8 @@
 (() => {
     let focus = "tab"; // tab | sidebar | glance
-    let currentTab = null;
-    let ctrlWPressed = null;
-    let timeout = null;
-    let glanceOwner = null;
-    let glancedTabIndex = null;
+    let currentTab, ctrlWPressed, timeout, glanceOwner;
+    let glancedTabIndex, sidebarHidden;
+    const sidebar = gZenCompactModeManager.sidebar;
 
     function mark(tab) {
         currentTab?.classList.remove("vim-cur");
@@ -17,11 +15,18 @@
         focus = nextFocus;
         currentTab?.classList.remove("vim-cur");
         currentTab = null;
+
+        if (sidebarHidden) {
+            gZenCompactModeManager.toggleSidebar();
+            sidebarHidden = null;
+        }
         gBrowser.selectedBrowser.focus();
     }
 
     function getActiveGlance() {
-        return gBrowser.selectedTab.hasAttribute("zen-glance-tab") ? gBrowser.selectedTab : null;
+        return gBrowser.selectedTab.hasAttribute("zen-glance-tab")
+            ? gBrowser.selectedTab
+            : null;
     }
 
     async function dismissGlance() {
@@ -34,7 +39,9 @@
             gReduceMotionOverride = prevMotionOverrideValue;
         }
         if (!glanceOwner) return;
-        const peekedPanel = glancedTab.linkedBrowser?.closest(".browserSidebarContainer");
+        const peekedPanel = glancedTab.linkedBrowser?.closest(
+            ".browserSidebarContainer",
+        );
         [...document.querySelectorAll("#tabbrowser-tabpanels > .deck-selected")]
             .filter((panel) => panel !== peekedPanel)
             .forEach((panel) => panel.classList.remove("deck-selected"));
@@ -61,6 +68,7 @@
         }
         if (!best) return false;
         gBrowser.selectedTab = best;
+        // highlightPage(best.linkedBrowser);
         best.linkedBrowser.focus();
         return true;
     }
@@ -104,6 +112,11 @@
             const h = () => {
                 if (focusPane(-1, 0)) return;
                 focus = "sidebar";
+                const isCompactMode =
+                    document.documentElement.getAttribute("zen-compact-mode");
+                const sidebarHidden = !sidebar.hasAttribute("zen-user-show");
+                if (isCompactMode && sidebarHidden)
+                    gZenCompactModeManager.toggleSidebar();
                 mark(gBrowser.selectedTab);
             };
             const l = () => focusPane(1, 0);
@@ -112,10 +125,16 @@
             const c = () => closeTab();
             const v = () => {
                 const copy = gBrowser.duplicateTab(gBrowser.selectedTab);
-                gZenViewSplitter.splitTabs([gBrowser.selectedTab, copy], undefined, 1);
+                gZenViewSplitter.splitTabs(
+                    [gBrowser.selectedTab, copy],
+                    undefined,
+                    1,
+                );
             };
             const m = async () => {
-                if (gBrowser.selectedTab.group.hasAttribute("split-view-group")) {
+                if (
+                    gBrowser.selectedTab.group.hasAttribute("split-view-group")
+                ) {
                     const tab = gBrowser.selectedTab;
                     await gZenViewSplitter.removeTabFromGroup(tab, undefined, {
                         forUnsplit: true,
@@ -152,7 +171,8 @@
 
             const i = tabs.indexOf(currentTab);
 
-            const goTo = (idx) => mark(tabs[Math.max(0, Math.min(idx, tabs.length - 1))]);
+            const goTo = (idx) =>
+                mark(tabs[Math.max(0, Math.min(idx, tabs.length - 1))]);
 
             const l = () => {
                 if (ctrlWPressed) {
@@ -162,15 +182,19 @@
                 }
             };
 
-            const d = () => {
+            const d = async () => {
                 const start = tabs.indexOf(gBrowser.selectedTab);
+                gZenUIManager.shakeElement(currentTab);
                 closeTab(currentTab, true);
                 if (start > i) goTo(i - 1);
                 else goTo(i);
             };
 
             const v = () => {
-                if (currentTab.group && currentTab.group.hasAttribute("split-view-group")) {
+                if (
+                    currentTab.group &&
+                    currentTab.group.hasAttribute("split-view-group")
+                ) {
                     gZenViewSplitter.removeTabFromGroup(currentTab, undefined, {
                         forUnsplit: true,
                     });
@@ -179,7 +203,11 @@
                         currentTab === gBrowser.selectedTab
                             ? gBrowser.duplicateTab(currentTab)
                             : currentTab;
-                    gZenViewSplitter.splitTabs([gBrowser.selectedTab, other], undefined, 1);
+                    gZenViewSplitter.splitTabs(
+                        [gBrowser.selectedTab, other],
+                        undefined,
+                        1,
+                    );
                 }
                 exit();
             };
@@ -198,13 +226,16 @@
             const r = () => {
                 currentTab
                     .querySelector(".tab-label-container")
-                    .dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+                    .dispatchEvent(
+                        new MouseEvent("dblclick", { bubbles: true }),
+                    );
             };
 
             const u = () => {
                 const currentTab = gBrowser.selectedTab;
-                SessionWindowUI.undoCloseTab(window);
+                const tab = SessionWindowUI.undoCloseTab(window);
                 gBrowser.selectedTab = currentTab;
+                gZenUIManager.shakeElement(tab);
             };
 
             const Enter = async () => {
@@ -221,6 +252,7 @@
                 u,
                 Enter,
                 Escape: exit,
+                " ": g,
                 j: () => goTo(i + 1),
                 k: () => goTo(i - 1),
                 h: () => goTo(i - 1),
@@ -228,6 +260,8 @@
 
             if (e.key in sidebarMovementHandlers) {
                 sidebarMovementHandlers[e.key]();
+            } else {
+                exit();
             }
         }
         ctrlWPressed = false;
