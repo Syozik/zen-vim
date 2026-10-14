@@ -62,10 +62,11 @@ In tab browsing mode:
 | `k` / `h` | Previous tab |
 | `Enter` | Select tab |
 | `r` | Rename tab |
-| `d` | Close tab |
+| `d` | Close tab (together with its nested tabs) |
 | `u` | Reopen previous closed tab |
 | `v` | Split tab with current (or unsplit if already in a split) |
 | `g` | Glance tab |
+| `z` | Fold / unfold tab group |
 | `Escape` | Exit |
 
 More to be added ...

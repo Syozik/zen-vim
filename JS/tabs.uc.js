@@ -4,16 +4,20 @@
     let glancedTabIndex, sidebarHidden;
     const sidebar = gZenCompactModeManager.sidebar;
 
+    function getVisibleTabs() {
+        return gBrowser.visibleTabs.filter((tab) => !tab.classList.contains("folded-hidden"));
+    }
+
     function mark(tab) {
-        currentTab?.classList.remove("vim-cur");
+        currentTab?.classList.remove("zen-vim-active-tab");
         currentTab = tab;
-        tab.classList.add("vim-cur");
+        tab.classList.add("zen-vim-active-tab");
         tab.scrollIntoView({ block: "nearest" });
     }
 
     function exit(nextFocus = "tab") {
         focus = nextFocus;
-        currentTab?.classList.remove("vim-cur");
+        currentTab?.classList.remove("zen-vim-active-tab");
         currentTab = null;
 
         if (sidebarHidden) {
@@ -72,19 +76,38 @@
         return true;
     }
 
+    function toggleFold(tab) {
+        const depthLevel = getDepth(tab);
+        if (tab.classList.contains("folded")) {
+            tab.classList.remove("folded");
+            let nextTab = tab.nextElementSibling;
+            while (nextTab && getDepth(nextTab) > depthLevel) {
+                nextTab.classList.remove("folded-hidden");
+                nextTab = nextTab.nextElementSibling;
+            }
+        } else {
+            tab.classList.add("folded");
+            let nextTab = tab.nextElementSibling;
+            while (nextTab && getDepth(nextTab) > depthLevel) {
+                nextTab.classList.add("folded-hidden");
+                nextTab = nextTab.nextElementSibling;
+            }
+        }
+    }
+
     function onKeyDown(e) {
         const stop = () => {
             e.preventDefault();
             e.stopPropagation();
         };
 
-        let tabs = gBrowser.visibleTabs;
+        let tabs = getVisibleTabs();
         function closeTab(tab = gBrowser.selectedTab, force = false) {
             if (tab.pinned && !force) {
                 return gZenPinnedTabManager.resetPinnedTab(tab);
             }
             gBrowser.removeTab(tab, { animate: true });
-            tabs = gBrowser.visibleTabs;
+            tabs = getVisibleTabs();
         }
 
         if (e.ctrlKey && e.key === "w") {
@@ -228,6 +251,11 @@
                 exit();
             };
 
+            const z = () => {
+                if (!currentTab.classList.contains("foldable")) return;
+                toggleFold(currentTab);
+            };
+
             const sidebarMovementHandlers = {
                 d,
                 v,
@@ -235,6 +263,7 @@
                 r,
                 g,
                 u,
+                z,
                 Enter,
                 Escape: exit,
                 " ": g,
@@ -271,17 +300,31 @@
         setDepth(tab, parseInt(SessionStore.getCustomTabValue(tab, DEPTH_KEY)) || 0);
     }
 
+    function makeTabFoldable(tab) {
+        if (tab.classList.contains("foldable")) return;
+        tab.classList.add("foldable");
+        const btn = document.createElement("div");
+        btn.className = "zen-vim-fold-btn";
+        btn.addEventListener("mousedown", (e) => e.stopPropagation());
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleFold(tab);
+        });
+        tab.querySelector(".tab-content").prepend(btn);
+    }
+
     function onNewTabOpen(e) {
         const parent = e.target.openerTab;
         if (!parent) return;
         const parentLevel = parseInt(parent.dataset.depthLevel ?? -1);
         setDepth(e.target, parentLevel + 1);
+        makeTabFoldable(parent)
     }
 
     function onTabClose(e) {
         const tab = e.target;
         const depthLevel = getDepth(tab);
-        const nextTab = tab.nextElementSibling;
+        let nextTab = tab.nextElementSibling;
         while (nextTab && getDepth(nextTab) > depthLevel) {
             gZenUIManager.shakeElement(nextTab);
             gBrowser.removeTab(nextTab, { animate: true });
@@ -290,7 +333,16 @@
     }
 
     // a little hack for now.
-    setTimeout(() => gBrowser.tabs.forEach(restoreDepth), 100);
+    setTimeout(() => {
+        const tabs = getVisibleTabs();
+        tabs.forEach(restoreDepth);
+        for (const tab of tabs) {
+            const nextTab = tab.nextElementSibling;
+            if (nextTab && getDepth(tab) < getDepth(nextTab)) {
+                makeTabFoldable(tab)
+            }
+        }
+    }, 100);
     gBrowser.tabContainer.addEventListener("TabOpen", onNewTabOpen);
     gBrowser.tabContainer.addEventListener("TabClose", onTabClose);
     gBrowser.tabContainer.addEventListener("SSTabRestoring", (e) => restoreDepth(e.target));
