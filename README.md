@@ -1,6 +1,6 @@
 # zen-vim
 
-Vim motions for Zen Browser tabs and splits, using [fx-autoconfig](https://github.com/MrOtherGuy/fx-autoconfig).
+Vim motions for Zen Browser tabs and splits, packaged for [Sine](https://github.com/CosmoCreeper/Sine) with a manual [fx-autoconfig](https://github.com/MrOtherGuy/fx-autoconfig) option.
 
 This works best when combined with vim motions extension for pages: https://github.com/philc/vimium
 
@@ -10,7 +10,23 @@ the browser UI with it, that's why I needed this project to closes that gap.
 
 https://github.com/user-attachments/assets/9e922b98-6b9d-4f98-b425-3985986a3a22
 
-### Install
+## Install
+
+### Sine
+
+1. Install [Sine](https://github.com/CosmoCreeper/Sine) and restart Zen.
+2. Open `Zen Settings` >> `Sine Mods` and enable JavaScript from unofficial sources.
+3. Install the repository:
+
+   ```text
+   https://github.com/syozik/zen-vim/tree/master
+   ```
+
+4. Restart Zen.
+
+Sine installs both `userChrome.css` and `JS/tabs.uc.js`, the fx-autoconfig files in this repository are not needed.
+
+### Manual (fx-autoconfig)
 
 1. Clone this repo as the `chrome` folder of your Zen profile (`about:profiles` shows the path):
 
