@@ -1,6 +1,8 @@
 # zen-vim
 
-Vim motions for Zen Browser tabs and splits, packaged for [Sine](https://github.com/CosmoCreeper/Sine) with a manual [fx-autoconfig](https://github.com/MrOtherGuy/fx-autoconfig) option.
+Vim motions for Zen Browser tabs and splits. This mode also transforms the tab sidebar into a tree view - meaning tabs are grouped by a parent from which they were opened. 
+
+It's packaged for [Sine](https://github.com/CosmoCreeper/Sine) with a manual [fx-autoconfig](https://github.com/MrOtherGuy/fx-autoconfig) option.
 
 This works best when combined with vim motions extension for pages: https://github.com/philc/vimium
 
@@ -24,9 +26,7 @@ https://github.com/user-attachments/assets/9e922b98-6b9d-4f98-b425-3985986a3a22
 
 4. Restart Zen.
 
-Sine installs both `userChrome.css` and `JS/tabs.uc.js`, the fx-autoconfig files in this repository are not needed.
-
-### Manual (fx-autoconfig)
+### Manual (without Sine, using fx-autoconfig)
 
 1. Clone this repo as the `chrome` folder of your Zen profile (`about:profiles` shows the path):
 
