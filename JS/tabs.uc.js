@@ -256,6 +256,10 @@
 
     const DEPTH_KEY = "zen-vim-depth";
 
+    function getDepth(tab) {
+        return parseInt(tab.dataset.depthLevel ?? 0);
+    }
+
     function setDepth(tab, depth) {
         if (tab.pinned) return;
         tab.dataset.depthLevel = depth;
@@ -274,8 +278,20 @@
         setDepth(e.target, parentLevel + 1);
     }
 
+    function onTabClose(e) {
+        const tab = e.target;
+        const depthLevel = getDepth(tab);
+        const nextTab = tab.nextElementSibling;
+        while (nextTab && getDepth(nextTab) > depthLevel) {
+            gZenUIManager.shakeElement(nextTab);
+            gBrowser.removeTab(nextTab, { animate: true });
+            nextTab = nextTab.nextElementSibling;
+        }
+    }
+
     // a little hack for now.
     setTimeout(() => gBrowser.tabs.forEach(restoreDepth), 100);
     gBrowser.tabContainer.addEventListener("TabOpen", onNewTabOpen);
+    gBrowser.tabContainer.addEventListener("TabClose", onTabClose);
     gBrowser.tabContainer.addEventListener("SSTabRestoring", (e) => restoreDepth(e.target));
 })();
