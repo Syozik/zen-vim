@@ -1,0 +1,30 @@
+{
+  "id": "zen-vim",
+  "name": "Zen Vim",
+  "description": "Vim motions for Zen Browser tabs and splits.",
+  "author": "Serhii Rubanskyi",
+  "version": "1.0.0",
+  "homepage": "https://github.com/syozik/zen-vim/tree/master",
+  "readme": "https://raw.githubusercontent.com/syozik/zen-vim/master/README.md",
+  "createdAt": "2026-10-08",
+  "updatedAt": "2026-10-14",
+  "tags": [
+    "keyboard",
+    "productivity",
+    "tabs",
+    "vim"
+  ],
+  "fork": [
+    "zen"
+  ],
+  "style": {
+    "chrome": "userChrome.css"
+  },
+  "scripts": {
+    "JS/tabs.uc.js": {
+      "include": [
+        "chrome://browser/content/browser.xhtml"
+      ]
+    }
+  }
+}
