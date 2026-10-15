@@ -145,7 +145,11 @@
                 const isCompactMode = document.documentElement.getAttribute("zen-compact-mode");
                 sidebarHidden = !sidebar.hasAttribute("zen-user-show");
                 if (isCompactMode && sidebarHidden) gZenCompactModeManager.toggleSidebar();
-                mark(gBrowser.selectedTab);
+                let visibleTab = gBrowser.selectedTab;
+                while (visibleTab && visibleTab.classList.contains("folded-hidden")) {
+                    visibleTab = visibleTab.previousElementSibling;
+                }
+                mark(visibleTab);
             };
             const l = () => focusPane(1, 0);
             const j = () => focusPane(0, 1);
@@ -260,7 +264,6 @@
             };
 
             const z = () => {
-                debugger;
                 if (!currentTab.classList.contains("foldable")) return;
                 toggleFold(currentTab);
             };
