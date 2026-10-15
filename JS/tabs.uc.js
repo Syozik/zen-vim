@@ -337,6 +337,7 @@
         const parentLevel = parseInt(parent.dataset.depthLevel ?? -1);
         setDepth(e.target, parentLevel + 1);
         makeTabFoldable(parent)
+        e.target.addEventListener("dragstart", onDragStart);
     }
 
     function onTabClose(e) {
@@ -357,6 +358,30 @@
         }
     }
 
+    function onDragStart(e) {
+        const tab = e.currentTarget;
+        const tabDepth = getDepth(tab);
+        const prevTab = tab.previousElementSibling;
+        const prevTabDepth = getDepth(prevTab);
+        let nextTab = tab.nextElementSibling;
+        if (prevTab && prevTabDepth < getDepth(tab)) {
+           if (!nextTab || getDepth(nextTab) <= prevTabDepth) {
+               tab.addEventListener("dragend", () => {
+                   makeTabNotFoldable(prevTab);
+               });
+            }
+        }
+        tab.addEventListener("dragend", () => {
+            setDepth(tab, 0);
+            makeTabNotFoldable(tab);
+            while (nextTab && getDepth(nextTab) > tabDepth) {
+                nextTab.classList.remove("folded-hidden");
+                setDepth(nextTab, getDepth(nextTab) - 1);
+                nextTab = nextTab.nextElementSibling;
+            }
+        });
+    }
+
     // a little hack for now.
     setTimeout(() => {
         const tabs = getVisibleTabs();
@@ -366,8 +391,10 @@
             if (nextTab && getDepth(tab) < getDepth(nextTab)) {
                 makeTabFoldable(tab)
             }
+            tab.addEventListener("dragstart", onDragStart);
         }
     }, 100);
+
     gBrowser.tabContainer.addEventListener("TabOpen", onNewTabOpen);
     gBrowser.tabContainer.addEventListener("TabClose", onTabClose);
     gBrowser.tabContainer.addEventListener("SSTabRestoring", (e) => restoreDepth(e.target));
