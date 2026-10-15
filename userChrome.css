@@ -4,16 +4,23 @@
 }
 
 .tabbrowser-tab[data-depth-level] {
-    --tree-step: 20px;
+    --tree-step: 24px;
     --tree-line-x: calc(var(--tab-inline-padding, 8px) + 8px);
-    --tree-line-color: color-mix(in srgb, currentColor 30%, transparent);
+    --tree-line-color: color-mix(in srgb, currentColor 22%, transparent);
 
-    background-image: repeating-linear-gradient(to right,
-        transparent 0 var(--tree-line-x),
-        var(--tree-line-color) var(--tree-line-x) calc(var(--tree-line-x) + 1px),
-        transparent calc(var(--tree-line-x) + 1px) var(--tree-step)) !important;
+    background-image:
+        linear-gradient(var(--tree-line-color), var(--tree-line-color)),
+        repeating-linear-gradient(to right,
+            transparent 0 var(--tree-line-x),
+            var(--tree-line-color) var(--tree-line-x) calc(var(--tree-line-x) + 1px),
+            transparent calc(var(--tree-line-x) + 1px) var(--tree-step)) !important;
     background-repeat: no-repeat !important;
-    background-size: calc(var(--depth-level) * var(--tree-step)) 100% !important;
+    background-position:
+        calc((var(--depth-level) - 1) * var(--tree-step) + var(--tree-line-x)) 50%,
+        0 0 !important;
+    background-size:
+        calc(var(--tree-step) - var(--tree-line-x)) 1px,
+        calc(var(--depth-level) * var(--tree-step)) 100% !important;
 
     & > .tab-stack {
         margin-inline-start: calc(var(--depth-level) * var(--tree-step));
@@ -52,4 +59,6 @@
 
 .tabbrowser-tab.folded-hidden {
     display: none;
+    opacity: 0;
+    transition: opacity 150ms ease, display 150ms allow-discrete;
 }

@@ -83,7 +83,15 @@
             let nextTab = tab.nextElementSibling;
             while (nextTab && getDepth(nextTab) > depthLevel) {
                 nextTab.classList.remove("folded-hidden");
-                nextTab = nextTab.nextElementSibling;
+                if (nextTab.classList.contains("folded")) {
+                    const currDepth = getDepth(nextTab);
+                    nextTab = nextTab.nextElementSibling;
+                    while (nextTab && getDepth(nextTab) > currDepth) {
+                        nextTab = nextTab.nextElementSibling;
+                    }
+                } else {
+                    nextTab = nextTab.nextElementSibling;
+                }
             }
         } else {
             tab.classList.add("folded");
@@ -252,6 +260,7 @@
             };
 
             const z = () => {
+                debugger;
                 if (!currentTab.classList.contains("foldable")) return;
                 toggleFold(currentTab);
             };
@@ -286,6 +295,7 @@
     const DEPTH_KEY = "zen-vim-depth";
 
     function getDepth(tab) {
+        if (!tab) return 0;
         return parseInt(tab.dataset.depthLevel ?? 0);
     }
 
@@ -313,6 +323,11 @@
         tab.querySelector(".tab-content").prepend(btn);
     }
 
+    function makeTabNotFoldable(tab) {
+        tab.classList.remove("foldable");
+        tab.querySelector(".zen-vim-fold-btn")?.remove();
+    }
+
     function onNewTabOpen(e) {
         const parent = e.target.openerTab;
         if (!parent) return;
@@ -329,6 +344,13 @@
             gZenUIManager.shakeElement(nextTab);
             gBrowser.removeTab(nextTab, { animate: true });
             nextTab = nextTab.nextElementSibling;
+        }
+        const prevTab = tab.previousElementSibling;
+        const prevTabDepth = getDepth(prevTab);
+        if (prevTab && prevTabDepth < depthLevel) {
+            if (!nextTab || prevTabDepth >= getDepth(nextTab)) {
+                makeTabNotFoldable(prevTab);
+            }
         }
     }
 
