@@ -296,7 +296,17 @@
     window.addEventListener("keydown", onKeyDown, true);
 
     const DEPTH_KEY = "zen-vim-depth";
+    const TAB_ID_KEY = "zen-vim-tab-id";
+    const PARENT_KEY = "zen-vim-parent-tab";
 
+    function getTabId(tab) {
+        let id = SessionStore.getCustomTabValue(tab, TAB_ID_KEY);
+        if (!id) {
+            id = crypto.randomUUID();
+           SessionStore.setCustomTabValue(tab, TAB_ID_KEY, id);
+        }
+        return id;
+    }
     function getDepth(tab) {
         if (!tab) return 0;
         return parseInt(tab.dataset.depthLevel ?? 0);
@@ -310,7 +320,10 @@
     }
 
     function restoreDepth(tab) {
-        setDepth(tab, parseInt(SessionStore.getCustomTabValue(tab, DEPTH_KEY)) || 0);
+        const depth = parseInt(SessionStore.getCustomTabValue(tab, DEPTH_KEY) ?? 0);
+        setDepth(tab, depth);
+        const prevTab = tab.previousElementSibling;
+        if (prevTab && getDepth(prevTab) < depth) makeTabFoldable(prevTab);
     }
 
     function makeTabFoldable(tab) {
@@ -340,14 +353,34 @@
         e.target.addEventListener("dragstart", onDragStart);
     }
 
+    function onTabRestored(e) {
+        const tab = e.target;
+        restoreDepth(tab);
+        SessionStore.deleteCustomTabValue(tab, PARENT_KEY);
+        const id = SessionStore.getCustomTabValue(tab, TAB_ID_KEY);
+        if (!id) return;
+        SessionStore.getClosedTabDataForWindow(window)
+            .filter((t) => t.state.extData?.[PARENT_KEY] === id)
+            .sort((a, b) => a.pos - b.pos)
+            .forEach((t) => SessionStore.undoCloseById(t.closedId));
+    }
+
     function onTabClose(e) {
         const tab = e.target;
         const depthLevel = getDepth(tab);
+        const descendants = [];
         let nextTab = tab.nextElementSibling;
         while (nextTab && getDepth(nextTab) > depthLevel) {
-            gZenUIManager.shakeElement(nextTab);
-            gBrowser.removeTab(nextTab, { animate: true });
+            descendants.push(nextTab);
             nextTab = nextTab.nextElementSibling;
+        }
+        if (descendants.length) {
+            const id = getTabId(tab);
+            for (const child of descendants.reverse()) {
+                gZenUIManager.shakeElement(child);
+                SessionStore.setCustomTabValue(child, PARENT_KEY, id);
+                gBrowser.removeTab(child, { animate: true });
+            }
         }
         const prevTab = tab.previousElementSibling;
         const prevTabDepth = getDepth(prevTab);
@@ -396,6 +429,6 @@
     }, 100);
 
     gBrowser.tabContainer.addEventListener("TabOpen", onNewTabOpen);
-    gBrowser.tabContainer.addEventListener("TabClose", onTabClose);
-    gBrowser.tabContainer.addEventListener("SSTabRestoring", (e) => restoreDepth(e.target));
+    window.addEventListener("TabClose", onTabClose, true);
+    gBrowser.tabContainer.addEventListener("SSTabRestoring", onTabRestored);
 })();
