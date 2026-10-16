@@ -212,11 +212,9 @@
             };
 
             const d = async () => {
-                const start = tabs.indexOf(gBrowser.selectedTab);
                 gZenUIManager.shakeElement(currentTab);
                 closeTab(currentTab, true);
-                if (start > i) goTo(i - 1);
-                else goTo(i);
+                goTo(i);
             };
 
             const v = () => {
