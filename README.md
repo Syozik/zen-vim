@@ -64,6 +64,7 @@ In tab browsing mode:
 | `r` | Rename tab |
 | `d` | Close tab (together with its nested tabs) |
 | `u` | Reopen previous closed tab |
+| `y` | Copy the tab's url |
 | `v` | Split tab with current (or unsplit if already in a split) |
 | `g` | Glance tab |
 | `z` | Fold / unfold tab group |

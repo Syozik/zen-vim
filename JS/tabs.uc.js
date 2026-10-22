@@ -251,6 +251,16 @@
                     .dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
             };
 
+            const y = async () => {
+                const url = currentTab._originalUrl;
+                try {
+                    await navigator.clipboard.writeText(url);
+                    exit();
+                } catch (error) {
+                    console.error(error.message);
+                }
+            };
+
             const u = () => {
                 const currentTab = gBrowser.selectedTab;
                 const tab = SessionWindowUI.undoCloseTab(window);
@@ -274,6 +284,7 @@
                 l,
                 r,
                 g,
+                y,
                 u,
                 z,
                 Enter,
