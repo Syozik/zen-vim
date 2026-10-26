@@ -252,11 +252,12 @@
             };
 
             const y = async () => {
-                const url = currentTab._originalUrl;
+                const url = currentTab.linkedBrowser.currentURI.spec;
                 try {
                     await navigator.clipboard.writeText(url);
                     exit();
                 } catch (error) {
+                    gZenUIManager.shakeElement(currentTab);
                     console.error(error.message);
                 }
             };
