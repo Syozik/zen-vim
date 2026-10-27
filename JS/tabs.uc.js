@@ -330,7 +330,7 @@
     }
 
     function restoreDepth(tab) {
-        const depth = parseInt(SessionStore.getCustomTabValue(tab, DEPTH_KEY) ?? 0);
+        const depth = parseInt(SessionStore.getCustomTabValue(tab, DEPTH_KEY)) || 0;
         setDepth(tab, depth);
         const prevTab = tab.previousElementSibling;
         if (prevTab && getDepth(prevTab) < depth) makeTabFoldable(prevTab);
@@ -356,8 +356,8 @@
 
     function onNewTabOpen(e) {
         const parent = e.target.openerTab;
-        if (!parent) return;
-        const parentLevel = parseInt(parent.dataset.depthLevel ?? -1);
+        if (!parent || parent.pinned) return;
+        const parentLevel = parseInt(parent.dataset.depthLevel) || 0;
         setDepth(e.target, parentLevel + 1);
         makeTabFoldable(parent)
         e.target.addEventListener("dragstart", onDragStart);
