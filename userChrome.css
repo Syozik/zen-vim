@@ -8,23 +8,35 @@
     --tree-line-x: calc(var(--tab-inline-padding, 8px) + 8px);
     --tree-line-color: color-mix(in srgb, currentColor 22%, transparent);
 
-    background-image:
-        linear-gradient(var(--tree-line-color), var(--tree-line-color)),
-        repeating-linear-gradient(to right,
-            transparent 0 var(--tree-line-x),
-            var(--tree-line-color) var(--tree-line-x) calc(var(--tree-line-x) + 1px),
-            transparent calc(var(--tree-line-x) + 1px) var(--tree-step)) !important;
+    position: relative;
+    background-image: repeating-linear-gradient(to right,
+        transparent 0 var(--tree-line-x),
+        var(--tree-line-color) var(--tree-line-x) calc(var(--tree-line-x) + 1px),
+        transparent calc(var(--tree-line-x) + 1px) var(--tree-step)) !important;
     background-repeat: no-repeat !important;
-    background-position:
-        calc((var(--depth-level) - 1) * var(--tree-step) + var(--tree-line-x)) 50%,
-        0 0 !important;
-    background-size:
-        calc(var(--tree-step) - var(--tree-line-x)) 1px,
-        calc(var(--depth-level) * var(--tree-step)) 100% !important;
+    background-size: max(0px, (var(--depth-level) - 1) * var(--tree-step)) 100% !important;
 
     & > .tab-stack {
         margin-inline-start: calc(var(--depth-level) * var(--tree-step));
     }
+
+    &:not([data-depth-level="0"])::before {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+        inset-block-start: -50%;
+        inset-inline-start: calc((var(--depth-level) - 1) * var(--tree-step) + var(--tree-line-x));
+        width: calc(var(--tree-step) - var(--tree-line-x));
+        height: 100%;
+        border-inline-start: 1px solid var(--tree-line-color);
+        border-block-end: 1px solid var(--tree-line-color);
+        border-end-start-radius: 6px;
+    }
+}
+
+.tabbrowser-tab.foldable + .tabbrowser-tab::before {
+    inset-block-start: 0;
+    height: 50%;
 }
 
 .zen-vim-fold-btn {
