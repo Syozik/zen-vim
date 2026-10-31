@@ -156,7 +156,7 @@ function openClaude(query) {
     gBrowser.addTrustedTab(finalUrl, { inBackground: false });
 }
 
-export const commandsList = {
+const commandsList = {
     preferences: {
         string: "Preferences: open",
         fn: openPreferences,
@@ -186,3 +186,7 @@ export const commandsList = {
         takesArgs: true,
     },
 };
+
+export function addCommand(id, command) {
+    commandsList[id] = command;
+}

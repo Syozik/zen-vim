@@ -1,0 +1,24 @@
+{
+  "name": "zen-vim",
+  "version": "1.0.0",
+  "description": "Vim motions for Zen Browser tabs and splits. This mode also transforms the tab sidebar into a tree view - meaning tabs are grouped by a parent from which they were opened.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Syozik/zen-vim.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Syozik/zen-vim/issues"
+  },
+  "homepage": "https://github.com/Syozik/zen-vim#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.14.0",
+    "globals": "^17.13.0"
+  }
+}

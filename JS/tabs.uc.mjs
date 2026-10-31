@@ -1,27 +1,30 @@
 import { createCmdPalette, toggleCommandPalette } from "./cmd_palette.mjs";
+import {
+    addKeyListener,
+    getVisibleTabs,
+    listenerHandlers,
+    state,
+    toggleFold,
+} from "./helpers.mjs";
+import { setupTree } from "./tree.mjs";
 
 (() => {
-    let focus = "tab"; // tab | sidebar | glance
-    let currentTab, ctrlWPressed, timeout, glanceOwner;
-    let glancedTabIndex, sidebarHidden;
+    let ctrlWPressed, timeout, glanceOwner, glancedTabIndex, sidebarHidden;
     const sidebar = gZenCompactModeManager.sidebar;
     createCmdPalette();
-
-    function getVisibleTabs() {
-        return gBrowser.visibleTabs.filter((tab) => !tab.classList.contains("folded-hidden"));
-    }
+    setupTree();
 
     function mark(tab) {
-        currentTab?.classList.remove("zen-vim-active-tab");
-        currentTab = tab;
+        state.currentTab?.classList.remove("zen-vim-active-tab");
+        state.currentTab = tab;
         tab.classList.add("zen-vim-active-tab");
         tab.scrollIntoView({ block: "nearest" });
     }
 
     function exit(nextFocus = "tab") {
-        focus = nextFocus;
-        currentTab?.classList.remove("zen-vim-active-tab");
-        currentTab = null;
+        state.focus = nextFocus;
+        state.currentTab?.classList.remove("zen-vim-active-tab");
+        state.currentTab = null;
 
         if (sidebarHidden) {
             gZenCompactModeManager.toggleSidebar();
@@ -34,7 +37,9 @@ import { createCmdPalette, toggleCommandPalette } from "./cmd_palette.mjs";
     const exitOnClick = () => exit();
 
     function getActiveGlance() {
-        return gBrowser.selectedTab.hasAttribute("zen-glance-tab") ? gBrowser.selectedTab : null;
+        return gBrowser.selectedTab.hasAttribute("zen-glance-tab")
+            ? gBrowser.selectedTab
+            : null;
     }
 
     async function dismissGlance() {
@@ -47,7 +52,9 @@ import { createCmdPalette, toggleCommandPalette } from "./cmd_palette.mjs";
             gReduceMotionOverride = prevMotionOverrideValue;
         }
         if (!glanceOwner) return;
-        const peekedPanel = glancedTab.linkedBrowser?.closest(".browserSidebarContainer");
+        const peekedPanel = glancedTab.linkedBrowser?.closest(
+            ".browserSidebarContainer",
+        );
         [...document.querySelectorAll("#tabbrowser-tabpanels > .deck-selected")]
             .filter((panel) => panel !== peekedPanel)
             .forEach((panel) => panel.classList.remove("deck-selected"));
@@ -59,7 +66,7 @@ import { createCmdPalette, toggleCommandPalette } from "./cmd_palette.mjs";
 
     function focusPane(dx, dy) {
         const split = gZenViewSplitter._data[gZenViewSplitter.currentView];
-        if (!split || focus !== "tab") return false;
+        if (!split || state.focus !== "tab") return false;
         const center = (r) => [r.left + r.width / 2, r.top + r.height / 2];
         const [x, y] = center(gBrowser.selectedBrowser.getBoundingClientRect());
         let best = null;
@@ -79,47 +86,21 @@ import { createCmdPalette, toggleCommandPalette } from "./cmd_palette.mjs";
         return true;
     }
 
-    function toggleFold(tab) {
-        const depthLevel = getDepth(tab);
-        if (tab.classList.contains("folded")) {
-            tab.classList.remove("folded");
-            let nextTab = tab.nextElementSibling;
-            while (nextTab && getDepth(nextTab) > depthLevel) {
-                nextTab.classList.remove("folded-hidden");
-                if (nextTab.classList.contains("folded")) {
-                    const currDepth = getDepth(nextTab);
-                    nextTab = nextTab.nextElementSibling;
-                    while (nextTab && getDepth(nextTab) > currDepth) {
-                        nextTab = nextTab.nextElementSibling;
-                    }
-                } else {
-                    nextTab = nextTab.nextElementSibling;
-                }
-            }
-        } else {
-            tab.classList.add("folded");
-            let nextTab = tab.nextElementSibling;
-            while (nextTab && getDepth(nextTab) > depthLevel) {
-                nextTab.classList.add("folded-hidden");
-                nextTab = nextTab.nextElementSibling;
-            }
+    let tabs;
+    function closeTab(tab = gBrowser.selectedTab, force = false) {
+        if (tab.pinned && !force) {
+            return gZenPinnedTabManager.resetPinnedTab(tab);
         }
+        gBrowser.removeTab(tab, { animate: true });
+        tabs = getVisibleTabs();
     }
 
     function onKeyDown(e) {
+        tabs = getVisibleTabs();
         const stop = () => {
             e.preventDefault();
             e.stopPropagation();
         };
-
-        let tabs = getVisibleTabs();
-        function closeTab(tab = gBrowser.selectedTab, force = false) {
-            if (tab.pinned && !force) {
-                return gZenPinnedTabManager.resetPinnedTab(tab);
-            }
-            gBrowser.removeTab(tab, { animate: true });
-            tabs = getVisibleTabs();
-        }
 
         if (e.ctrlKey && e.key === "w") {
             stop();
@@ -145,308 +126,166 @@ import { createCmdPalette, toggleCommandPalette } from "./cmd_palette.mjs";
         if (document.getElementById("tab-label-input")) {
             return;
         }
-        else if (focus === "tab") {
-            const h = () => {
-                if (focusPane(-1, 0)) return;
-                focus = "sidebar";
-                document.addEventListener("click", exitOnClick);
-                const isCompactMode = document.documentElement.getAttribute("zen-compact-mode");
-                sidebarHidden = !sidebar.hasAttribute("zen-user-show");
-                if (isCompactMode && sidebarHidden) gZenCompactModeManager.toggleSidebar();
-                let visibleTab = gBrowser.selectedTab;
-                while (visibleTab && visibleTab.classList.contains("folded-hidden")) {
-                    visibleTab = visibleTab.previousElementSibling;
-                }
-                mark(visibleTab);
-            };
-            const l = () => focusPane(1, 0);
-            const j = () => focusPane(0, 1);
-            const k = () => focusPane(0, -1);
-            const c = () => closeTab();
-            const v = () => {
-                const copy = gBrowser.duplicateTab(gBrowser.selectedTab);
-                gZenViewSplitter.splitTabs([gBrowser.selectedTab, copy], undefined, 1);
-            };
-            const m = async () => {
-                if (gBrowser.selectedTab.group.hasAttribute("split-view-group")) {
-                    const tab = gBrowser.selectedTab;
-                    await gZenViewSplitter.removeTabFromGroup(tab, undefined, {
-                        forUnsplit: true,
-                    });
-                    gBrowser.selectedTab = tab;
-                }
-            };
 
-            const handlers = { h, l, j, k, c, v, m };
-
-            if (ctrlWPressed) {
-                if (e.key in handlers) {
-                    stop();
-                    handlers[e.key]();
-                }
-            }
-        } else if (focus === "glance") {
-            if (!getActiveGlance()) {
-                exit();
-                return;
-            }
-            const Escape = async () => {
-                await dismissGlance();
-                exit();
-            };
-            const Enter = async () => {
-                glanceOwner = null;
-                await gZenGlanceManager.fullyOpenGlance();
-                exit();
-            };
-            const handlers = { Escape, Enter };
+        const handlers = listenerHandlers[state.focus];
+        if (!handlers["*"]?.some((fn) => fn())) {
             if (e.key in handlers) {
                 stop();
-                handlers[e.key]();
-            }
-        } else if (focus === "sidebar") {
-            stop();
-
-            const i = tabs.indexOf(currentTab);
-
-            const goTo = (idx) => mark(tabs[Math.max(0, Math.min(idx, tabs.length - 1))]);
-
-            const l = () => {
-                if (ctrlWPressed) {
-                    exit();
-                } else {
-                    goTo(i + 1);
-                }
-            };
-
-            const d = async () => {
-                gZenUIManager.shakeElement(currentTab);
-                closeTab(currentTab, true);
-                goTo(i);
-            };
-
-            const v = () => {
-                if (currentTab.group && currentTab.group.hasAttribute("split-view-group")) {
-                    gZenViewSplitter.removeTabFromGroup(currentTab, undefined, {
-                        forUnsplit: true,
-                    });
-                } else {
-                    const other =
-                        currentTab === gBrowser.selectedTab
-                            ? gBrowser.duplicateTab(currentTab)
-                            : currentTab;
-                    gZenViewSplitter.splitTabs([gBrowser.selectedTab, other], undefined, 1);
-                }
-                exit();
-            };
-
-            const g = async () => {
-                if (getActiveGlance()) {
-                    await dismissGlance();
-                }
-                if (currentTab === gBrowser.selectedTab) return;
-                glanceOwner = gBrowser.selectedTab;
-                glancedTabIndex = currentTab.index;
-                await gZenGlanceManager.openGlance({}, currentTab, glanceOwner);
-                exit("glance");
-            };
-
-            const r = () => {
-                currentTab
-                    .querySelector(".tab-label-container")
-                    .dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
-            };
-
-            const y = async () => {
-                const url = currentTab.linkedBrowser.currentURI.spec;
-                try {
-                    await navigator.clipboard.writeText(url);
-                    exit();
-                } catch (error) {
-                    gZenUIManager.shakeElement(currentTab);
-                    console.error(error.message);
-                }
-            };
-
-            const u = () => {
-                const currentTab = gBrowser.selectedTab;
-                const tab = SessionWindowUI.undoCloseTab(window);
-                gBrowser.selectedTab = currentTab;
-                gZenUIManager.shakeElement(tab);
-            };
-
-            const Enter = async () => {
-                gBrowser.selectedTab = currentTab;
-                exit();
-            };
-
-            const z = () => {
-                if (!currentTab.classList.contains("foldable")) return;
-                toggleFold(currentTab);
-            };
-
-            const sidebarMovementHandlers = {
-                d,
-                v,
-                l,
-                r,
-                g,
-                y,
-                u,
-                z,
-                Enter,
-                Escape: exit,
-                " ": g,
-                j: () => goTo(i + 1),
-                k: () => goTo(i - 1),
-                h: () => goTo(i - 1),
-            };
-
-            if (e.key in sidebarMovementHandlers) {
-                sidebarMovementHandlers[e.key]();
+                handlers[e.key].some((fn) => fn());
             } else {
-                exit();
+                handlers["!"]?.some((fn) => fn());
             }
         }
         ctrlWPressed = false;
     }
 
+    addKeyListener("tab", "*", () => !ctrlWPressed);
+    addKeyListener("tab", "h", () => {
+        if (focusPane(-1, 0)) return;
+        state.focus = "sidebar";
+        document.addEventListener("click", exitOnClick);
+        const isCompactMode =
+            document.documentElement.getAttribute("zen-compact-mode");
+        sidebarHidden = !sidebar.hasAttribute("zen-user-show");
+        if (isCompactMode && sidebarHidden)
+            gZenCompactModeManager.toggleSidebar();
+        let visibleTab = gBrowser.selectedTab;
+        while (visibleTab && visibleTab.classList.contains("folded-hidden")) {
+            visibleTab = visibleTab.previousElementSibling;
+        }
+        mark(visibleTab);
+    });
+    addKeyListener("tab", "l", () => focusPane(1, 0));
+    addKeyListener("tab", "j", () => focusPane(0, 1));
+    addKeyListener("tab", "k", () => focusPane(0, -1));
+    addKeyListener("tab", "c", closeTab);
+    addKeyListener("tab", "v", () => {
+        const copy = gBrowser.duplicateTab(gBrowser.selectedTab);
+        gZenViewSplitter.splitTabs([gBrowser.selectedTab, copy], undefined, 1);
+    });
+    addKeyListener("tab", "m", async () => {
+        if (gBrowser.selectedTab.group.hasAttribute("split-view-group")) {
+            const tab = gBrowser.selectedTab;
+            await gZenViewSplitter.removeTabFromGroup(tab, undefined, {
+                forUnsplit: true,
+            });
+            gBrowser.selectedTab = tab;
+        }
+    });
+
+    addKeyListener("glance", "*", () => {
+        if (!getActiveGlance()) {
+            exit();
+            return true;
+        }
+    });
+    addKeyListener("glance", "Escape", async () => {
+        await dismissGlance();
+        exit();
+    });
+    addKeyListener("glance", "Enter", async () => {
+        glanceOwner = null;
+        await gZenGlanceManager.fullyOpenGlance();
+        exit();
+    });
+
+    addKeyListener("sidebar", "*", stop);
+
+    const goWithStep = (step) => {
+        const i = tabs.indexOf(state.currentTab);
+        goTo(i + step);
+    };
+
+    const goTo = (idx) =>
+        mark(tabs[Math.max(0, Math.min(idx, tabs.length - 1))]);
+
+    addKeyListener("sidebar", "l", () => {
+        if (ctrlWPressed) {
+            exit();
+        } else {
+            goWithStep(1);
+        }
+    });
+    addKeyListener("sidebar", "d", async () => {
+        gZenUIManager.shakeElement(state.currentTab);
+        const i = tabs.indexOf(state.currentTab);
+        closeTab(state.currentTab, true);
+        goTo(i);
+    });
+    addKeyListener("sidebar", "v", () => {
+        if (
+            state.currentTab.group &&
+            state.currentTab.group.hasAttribute("split-view-group")
+        ) {
+            gZenViewSplitter.removeTabFromGroup(state.currentTab, undefined, {
+                forUnsplit: true,
+            });
+        } else {
+            const other =
+                state.currentTab === gBrowser.selectedTab
+                    ? gBrowser.duplicateTab(state.currentTab)
+                    : state.currentTab;
+            gZenViewSplitter.splitTabs(
+                [gBrowser.selectedTab, other],
+                undefined,
+                1,
+            );
+        }
+        exit();
+    });
+
+    const glance = async () => {
+        if (getActiveGlance()) {
+            await dismissGlance();
+        }
+        if (state.currentTab === gBrowser.selectedTab) return;
+        glanceOwner = gBrowser.selectedTab;
+        glancedTabIndex = state.currentTab.index;
+        await gZenGlanceManager.openGlance({}, state.currentTab, glanceOwner);
+        exit("glance");
+    };
+
+    addKeyListener("sidebar", "g", glance);
+    addKeyListener("sidebar", "r", () => {
+        state.currentTab
+            .querySelector(".tab-label-container")
+            .dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    });
+
+    addKeyListener("sidebar", "y", async () => {
+        const url = state.currentTab.linkedBrowser.currentURI.spec;
+        try {
+            await navigator.clipboard.writeText(url);
+            exit();
+        } catch (error) {
+            gZenUIManager.shakeElement(state.currentTab);
+            console.error(error.message);
+        }
+    });
+
+    addKeyListener("sidebar", "u", () => {
+        const currentTab = gBrowser.selectedTab;
+        const tab = SessionWindowUI.undoCloseTab(window);
+        gBrowser.selectedTab = currentTab;
+        gZenUIManager.shakeElement(tab);
+    });
+
+    addKeyListener("sidebar", "Enter", async () => {
+        gBrowser.selectedTab = state.currentTab;
+        exit();
+    });
+
+    addKeyListener("sidebar", "z", () => {
+        if (!state.currentTab.classList.contains("foldable")) return;
+        toggleFold(state.currentTab);
+    });
+
+    addKeyListener("sidebar", "Escape", exit);
+    addKeyListener("sidebar", " ", glance);
+    addKeyListener("sidebar", "j", () => goWithStep(1));
+    addKeyListener("sidebar", "k", () => goWithStep(-1));
+    addKeyListener("sidebar", "h", () => goWithStep(-1));
+    addKeyListener("sidebar", "!", exit);
+
     window.addEventListener("keydown", onKeyDown, true);
-
-    const DEPTH_KEY = "zen-vim-depth";
-    const TAB_ID_KEY = "zen-vim-tab-id";
-    const PARENT_KEY = "zen-vim-parent-tab";
-
-    function getTabId(tab) {
-        let id = SessionStore.getCustomTabValue(tab, TAB_ID_KEY);
-        if (!id) {
-            id = crypto.randomUUID();
-           SessionStore.setCustomTabValue(tab, TAB_ID_KEY, id);
-        }
-        return id;
-    }
-    function getDepth(tab) {
-        if (!tab) return 0;
-        return parseInt(tab.dataset.depthLevel ?? 0);
-    }
-
-    function setDepth(tab, depth) {
-        if (tab.pinned) return;
-        tab.dataset.depthLevel = depth;
-        tab.style.setProperty("--depth-level", depth);
-        SessionStore.setCustomTabValue(tab, DEPTH_KEY, String(depth));
-    }
-
-    function restoreDepth(tab) {
-        const depth = parseInt(SessionStore.getCustomTabValue(tab, DEPTH_KEY)) || 0;
-        setDepth(tab, depth);
-        const prevTab = tab.previousElementSibling;
-        if (prevTab && getDepth(prevTab) < depth) makeTabFoldable(prevTab);
-    }
-
-    function makeTabFoldable(tab) {
-        if (tab.classList.contains("foldable")) return;
-        tab.classList.add("foldable");
-        const btn = document.createElement("div");
-        btn.className = "zen-vim-fold-btn";
-        btn.addEventListener("mousedown", (e) => e.stopPropagation());
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            toggleFold(tab);
-        });
-        tab.querySelector(".tab-content").prepend(btn);
-    }
-
-    function makeTabNotFoldable(tab) {
-        tab.classList.remove("foldable");
-        tab.querySelector(".zen-vim-fold-btn")?.remove();
-    }
-
-    function onNewTabOpen(e) {
-        const parent = e.target.openerTab;
-        if (!parent || parent.pinned) return;
-        const parentLevel = parseInt(parent.dataset.depthLevel) || 0;
-        setDepth(e.target, parentLevel + 1);
-        makeTabFoldable(parent)
-        e.target.addEventListener("dragstart", onDragStart);
-    }
-
-    function onTabRestored(e) {
-        const tab = e.target;
-        restoreDepth(tab);
-        SessionStore.deleteCustomTabValue(tab, PARENT_KEY);
-        const id = SessionStore.getCustomTabValue(tab, TAB_ID_KEY);
-        if (!id) return;
-        SessionStore.getClosedTabDataForWindow(window)
-            .filter((t) => t.state.extData?.[PARENT_KEY] === id)
-            .sort((a, b) => a.pos - b.pos)
-            .forEach((t) => SessionStore.undoCloseById(t.closedId));
-    }
-
-    function onTabClose(e) {
-        const tab = e.target;
-        const depthLevel = getDepth(tab);
-        const descendants = [];
-        let nextTab = tab.nextElementSibling;
-        while (nextTab && getDepth(nextTab) > depthLevel) {
-            descendants.push(nextTab);
-            nextTab = nextTab.nextElementSibling;
-        }
-        if (descendants.length) {
-            const id = getTabId(tab);
-            for (const child of descendants.reverse()) {
-                gZenUIManager.shakeElement(child);
-                SessionStore.setCustomTabValue(child, PARENT_KEY, id);
-                gBrowser.removeTab(child, { animate: true });
-            }
-        }
-        const prevTab = tab.previousElementSibling;
-        const prevTabDepth = getDepth(prevTab);
-        if (prevTab && prevTabDepth < depthLevel) {
-            if (!nextTab || prevTabDepth >= getDepth(nextTab)) {
-                makeTabNotFoldable(prevTab);
-            }
-        }
-    }
-
-    function onDragStart(e) {
-        const tab = e.currentTarget;
-        const tabDepth = getDepth(tab);
-        const prevTab = tab.previousElementSibling;
-        const prevTabDepth = getDepth(prevTab);
-        let nextTab = tab.nextElementSibling;
-        if (prevTab && prevTabDepth < getDepth(tab)) {
-           if (!nextTab || getDepth(nextTab) <= prevTabDepth) {
-               tab.addEventListener("dragend", () => {
-                   makeTabNotFoldable(prevTab);
-               });
-            }
-        }
-        tab.addEventListener("dragend", () => {
-            setDepth(tab, 0);
-            makeTabNotFoldable(tab);
-            while (nextTab && getDepth(nextTab) > tabDepth) {
-                nextTab.classList.remove("folded-hidden");
-                setDepth(nextTab, getDepth(nextTab) - 1);
-                nextTab = nextTab.nextElementSibling;
-            }
-        });
-    }
-
-    // a little hack for now.
-    setTimeout(() => {
-        const tabs = getVisibleTabs();
-        tabs.forEach(restoreDepth);
-        for (const tab of tabs) {
-            const nextTab = tab.nextElementSibling;
-            if (nextTab && getDepth(tab) < getDepth(nextTab)) {
-                makeTabFoldable(tab)
-            }
-            tab.addEventListener("dragstart", onDragStart);
-        }
-    }, 100);
-
-    gBrowser.tabContainer.addEventListener("TabOpen", onNewTabOpen);
-    window.addEventListener("TabClose", onTabClose, true);
-    gBrowser.tabContainer.addEventListener("SSTabRestoring", onTabRestored);
 })();
