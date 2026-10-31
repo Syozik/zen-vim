@@ -1,8 +1,11 @@
+import { createCmdPalette, toggleCommandPalette } from "./cmd_palette.mjs";
+
 (() => {
     let focus = "tab"; // tab | sidebar | glance
     let currentTab, ctrlWPressed, timeout, glanceOwner;
     let glancedTabIndex, sidebarHidden;
     const sidebar = gZenCompactModeManager.sidebar;
+    createCmdPalette();
 
     function getVisibleTabs() {
         return gBrowser.visibleTabs.filter((tab) => !tab.classList.contains("folded-hidden"));
@@ -129,6 +132,11 @@
             return;
         }
 
+        if (e.ctrlKey && e.key === ":") {
+            toggleCommandPalette();
+            return;
+        }
+
         if (timeout) {
             clearTimeout(timeout);
             timeout = null;
@@ -137,7 +145,7 @@
         if (document.getElementById("tab-label-input")) {
             return;
         }
-        if (focus === "tab") {
+        else if (focus === "tab") {
             const h = () => {
                 if (focusPane(-1, 0)) return;
                 focus = "sidebar";

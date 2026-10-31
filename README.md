@@ -53,6 +53,7 @@ https://github.com/user-attachments/assets/9e922b98-6b9d-4f98-b425-3985986a3a22
 | `Ctrl-W c` | Close current tab |
 | `Ctrl-W v` | Open current tab in the split view |
 | `Ctrl-W m` | Maximize current tab (if in the split view) |
+| `Ctrl-:` | Open command palette |
 
 In tab browsing mode:
 
@@ -69,5 +70,16 @@ In tab browsing mode:
 | `g` | Glance tab |
 | `z` | Fold / unfold tab group |
 | `Escape` | Exit |
+
+Available commands in the palette:
+
+| Command | Description |
+|-----|--------|
+| Glance | Open a new glance |
+| Split view | Open a new split view |
+| Claude | Open a new claude chat with your question |
+| Preferences | Go to the settings |
+| Theme | Toggle the current theme |
+| Essentials | Add current tab to essentials |
 
 More to be added ...

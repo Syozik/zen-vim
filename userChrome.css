@@ -74,3 +74,81 @@
     opacity: 0;
     transition: opacity 150ms ease, display 150ms allow-discrete;
 }
+
+#zv-command-palette {
+    z-index: 100;
+    position: fixed;
+    top: 25vh;
+    left: 50%;
+    translate: -50% 0;
+    width: min(80%, 50rem);
+    padding: 4px;
+    border-radius: 10px;
+    background: var(--zen-urlbar-background, var(--zen-dialog-background, Field));
+    color: var(--toolbar-color, FieldText);
+    outline: 1px solid light-dark(rgba(0, 0, 0, 0.15), rgba(255, 255, 255, 0.15));
+    box-shadow: 0 0 9px 3px light-dark(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.4));
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+
+    & > .selected-command {
+        margin: 0 0 0 4px;
+        padding: 2px 10px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--zen-primary-color, AccentColor) 30%, transparent);
+        white-space: nowrap;
+    }
+
+    & > input {
+        appearance: none !important;
+        box-sizing: border-box;
+        flex: 1;
+        min-width: 0;
+        height: 36px;
+        margin: 0 !important;
+        padding: 0 8px !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        color: inherit !important;
+        font-size: 1em;
+    }
+
+    & > .commands,
+    & > .info {
+        flex-basis: 100%;
+    }
+
+    & > .info {
+        margin: 0;
+        padding: 8px;
+        opacity: 0.6;
+    }
+
+    & > .commands {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        padding-block: 4px;
+        border-top: 1px solid light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
+
+        &:empty {
+            display: none;
+        }
+
+        & > div {
+            padding: 8px;
+            border-radius: 6px;
+
+            &.selected {
+                background: color-mix(in srgb, currentColor 10%, transparent);
+            }
+        }
+    }
+}
+
+.d-none {
+    display: none !important;
+}

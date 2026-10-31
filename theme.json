@@ -3,7 +3,7 @@
   "name": "Zen Vim",
   "description": "Vim motions for Zen Browser tabs and splits.",
   "author": "Serhii Rubanskyi",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "homepage": "https://github.com/syozik/zen-vim/tree/master",
   "readme": "https://raw.githubusercontent.com/syozik/zen-vim/master/README.md",
   "createdAt": "2026-10-08",
@@ -21,7 +21,7 @@
     "chrome": "userChrome.css"
   },
   "scripts": {
-    "JS/tabs.uc.js": {
+    "JS/tabs.uc.mjs": {
       "include": [
         "chrome://browser/content/browser.xhtml"
       ]
