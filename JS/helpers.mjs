@@ -44,7 +44,7 @@ export const listenerHandlers = {
 export function addKeyListener(focus, key, fn) {
     const keys = [key];
     const m = key.match(/^ctrl-w (\w)$/);
-    if (m) keys.push(`ctrl-w ctrl-${m[1]}`); // ctrl-w h shoudl be the same as ctrl-w ctrl-h
+    if (m) keys.push(`ctrl-w ctrl-${m[1]}`); // ctrl-w h should be the same as ctrl-w ctrl-h
     for (const k of keys) {
         if (!(k in listenerHandlers[focus])) {
             listenerHandlers[focus][k] = [];

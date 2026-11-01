@@ -176,10 +176,10 @@ import { setupTree } from "./tree.mjs";
     addKeyListener("tab", "ctrl-w j", () => focusPane(0, 1));
     addKeyListener("tab", "ctrl-w k", () => focusPane(0, -1));
     addKeyListener("tab", "ctrl-w c", closeTab);
-    addKeyListener("tab", "ctrl-w v", () => {
-        const copy = gBrowser.duplicateTab(gBrowser.selectedTab);
-        gZenViewSplitter.splitTabs([gBrowser.selectedTab, copy], undefined, 1);
-    });
+    // addKeyListener("tab", "ctrl-shift-W v", () => {
+    //     const copy = gBrowser.duplicateTab(gBrowser.selectedTab);
+    //     gZenViewSplitter.splitTabs([gBrowser.selectedTab, copy], undefined, 1);
+    // });
     addKeyListener("tab", "ctrl-w m", async () => {
         if (gBrowser.selectedTab.group.hasAttribute("split-view-group")) {
             const tab = gBrowser.selectedTab;

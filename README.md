@@ -75,16 +75,16 @@ In tab browsing mode:
 
 Available commands in the palette:
 
-| Command             | Description                               |
-| ------------------- | ----------------------------------------- |
-| Glance              | Open a new glance                         |
-| Split view          | Open a new split view                     |
-| Claude              | Open a new claude chat with your question |
-| Preferences         | Go to the settings                        |
-| Theme               | Toggle the current theme                  |
-| Compact mode        | Toggle the sidebar mode                   |
-| Essentials          | Add current tab to essentials             |
-| Promote tab         | Move current nested tab one level higher  |
-| Promote tab to root | Move current nested tab to the top        |
+| Command             | Description                               | Shortcut   |
+| ------------------- | ----------------------------------------- | ---------- |
+| Glance              | Open a new glance                         | ctrl-w g   |
+| Split view          | Open a new split view                     | ctrl-w v   |
+| Claude              | Open a new claude chat with your question | ctrl-w a i |
+| Preferences         | Go to the settings                        |            |
+| Theme               | Toggle the current theme                  | ctrl-w t   |
+| Compact mode        | Toggle the sidebar mode                   | ctrl-w s   |
+| Essentials          | Add current tab to essentials             |            |
+| Promote tab         | Move current nested tab one level higher  |            |
+| Promote tab to root | Move current nested tab to the top        |            |
 
 More to be added ...

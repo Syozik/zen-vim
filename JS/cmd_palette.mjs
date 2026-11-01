@@ -109,6 +109,7 @@ function executeCommand(id) {
         selectedCommand.textContent = id;
     } else {
         command.fn(input.value);
+        hideCommandPalette();
     }
 }
 
@@ -187,6 +188,7 @@ const commandsList = {
     split: {
         string: "Split: open a new page in the split view",
         fn: split,
+        shortcut: "ctrl-w v",
         takesArgs: true,
     },
     theme: {
