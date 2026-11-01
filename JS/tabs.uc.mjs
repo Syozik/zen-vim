@@ -1,6 +1,8 @@
-import { createCmdPalette, toggleCommandPalette } from "./cmd_palette.mjs";
+import { createCmdPalette } from "./cmd_palette.mjs";
 import {
     addKeyListener,
+    fnKeys,
+    getKey,
     getVisibleTabs,
     isCompactMode,
     isSidebarHidden,
@@ -11,7 +13,7 @@ import {
 import { setupTree } from "./tree.mjs";
 
 (() => {
-    let ctrlWPressed, timeout, glanceOwner, glancedTabIndex;
+    let timeout, glanceOwner, glancedTabIndex;
     createCmdPalette();
     setupTree();
 
@@ -95,52 +97,70 @@ import { setupTree } from "./tree.mjs";
         tabs = getVisibleTabs();
     }
 
-    function onKeyDown(e) {
+    function onKeyDown(ev) {
+        if (fnKeys.has(ev.key)) return;
+        state.pressedHistory.push(getKey(ev));
+        if (state.pressedHistory.length >= 100)
+            state.pressedHistory.splice(0, 100);
         tabs = getVisibleTabs();
         const stop = () => {
-            e.preventDefault();
-            e.stopPropagation();
+            ev.preventDefault();
+            ev.stopPropagation();
         };
 
-        if (e.ctrlKey && e.key === "w") {
-            stop();
-            ctrlWPressed = true;
-            timeout = setTimeout(() => {
-                closeTab();
-                ctrlWPressed = false;
-                timeout = null;
-            }, 250);
+        const globalHandlers = listenerHandlers["*"];
+        if (globalHandlers["*"]?.some((fn) => fn())) {
             return;
         }
 
-        if (e.ctrlKey && e.key === ":") {
-            toggleCommandPalette();
-            return;
-        }
+        const historyLength = state.pressedHistory.length;
+        const handlers = listenerHandlers[state.focus];
+        let foundKey = false;
+        for (let length = Math.min(3, historyLength); length >= 1; length--) {
+            const key = state.pressedHistory
+                .slice(historyLength - length)
+                .join(" ");
+            if (key in globalHandlers) {
+                stop();
+                if (globalHandlers[key].some((fn) => fn())) {
+                    return;
+                }
+            }
 
+            if (handlers && !handlers["*"]?.some((fn) => fn())) {
+                if (key in handlers) {
+                    stop();
+                    handlers[key].some((fn) => fn());
+                    foundKey = true;
+                    break;
+                }
+            }
+        }
+        if (handlers && !foundKey) {
+            handlers["!"]?.some((fn) => fn());
+        }
+    }
+
+    addKeyListener("*", "*", () => {
         if (timeout) {
             clearTimeout(timeout);
             timeout = null;
         }
 
-        if (document.getElementById("tab-label-input")) {
-            return;
-        }
+        return !!document.getElementById("tab-label-input");
+    });
 
-        const handlers = listenerHandlers[state.focus];
-        if (!handlers["*"]?.some((fn) => fn())) {
-            if (e.key in handlers) {
-                stop();
-                handlers[e.key].some((fn) => fn());
-            } else {
-                handlers["!"]?.some((fn) => fn());
-            }
-        }
-        ctrlWPressed = false;
-    }
+    addKeyListener("*", "ctrl-w", () => {
+        stop();
+        timeout = setTimeout(() => {
+            closeTab();
+            state.pressedHistory.pop();
+            timeout = null;
+        }, 250);
+        return true;
+    });
 
-    addKeyListener("tab", "*", () => !ctrlWPressed);
-    addKeyListener("tab", "h", () => {
+    addKeyListener("tab", "ctrl-w h", () => {
         if (focusPane(-1, 0)) return;
         state.focus = "sidebar";
         document.addEventListener("click", exitOnClick);
@@ -152,15 +172,15 @@ import { setupTree } from "./tree.mjs";
         }
         mark(visibleTab);
     });
-    addKeyListener("tab", "l", () => focusPane(1, 0));
-    addKeyListener("tab", "j", () => focusPane(0, 1));
-    addKeyListener("tab", "k", () => focusPane(0, -1));
-    addKeyListener("tab", "c", closeTab);
-    addKeyListener("tab", "v", () => {
+    addKeyListener("tab", "ctrl-w l", () => focusPane(1, 0));
+    addKeyListener("tab", "ctrl-w j", () => focusPane(0, 1));
+    addKeyListener("tab", "ctrl-w k", () => focusPane(0, -1));
+    addKeyListener("tab", "ctrl-w c", closeTab);
+    addKeyListener("tab", "ctrl-w v", () => {
         const copy = gBrowser.duplicateTab(gBrowser.selectedTab);
         gZenViewSplitter.splitTabs([gBrowser.selectedTab, copy], undefined, 1);
     });
-    addKeyListener("tab", "m", async () => {
+    addKeyListener("tab", "ctrl-w m", async () => {
         if (gBrowser.selectedTab.group.hasAttribute("split-view-group")) {
             const tab = gBrowser.selectedTab;
             await gZenViewSplitter.removeTabFromGroup(tab, undefined, {
@@ -196,13 +216,8 @@ import { setupTree } from "./tree.mjs";
     const goTo = (idx) =>
         mark(tabs[Math.max(0, Math.min(idx, tabs.length - 1))]);
 
-    addKeyListener("sidebar", "l", () => {
-        if (ctrlWPressed) {
-            exit();
-        } else {
-            goWithStep(1);
-        }
-    });
+    addKeyListener("sidebar", "ctrl-w l", exit);
+    addKeyListener("sidebar", "l", () => goWithStep(1));
     addKeyListener("sidebar", "d", async () => {
         gZenUIManager.shakeElement(state.currentTab);
         const i = tabs.indexOf(state.currentTab);

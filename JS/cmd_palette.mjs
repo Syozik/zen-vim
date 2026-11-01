@@ -1,4 +1,4 @@
-import { getUrl, triggeringPrincipal } from "./helpers.mjs";
+import { addKeyListener, getUrl, triggeringPrincipal } from "./helpers.mjs";
 
 let palette, input, commandsBlock, selectedIdx, selectedCommand;
 
@@ -13,7 +13,7 @@ export function createCmdPalette() {
     palette.append(selectedCommand);
     input = document.createElement("input");
     input.placeholder = inputPlaceholder;
-    input.addEventListener("blur", () => toggleCommandPalette(false));
+    input.addEventListener("blur", () => hideCommandPalette());
     input.addEventListener("input", onCmdInput);
     input.addEventListener("keydown", onKeyDown);
     palette.append(input);
@@ -25,22 +25,33 @@ export function createCmdPalette() {
     noMatches.textContent = "No matches";
     palette.append(noMatches);
     document.body.append(palette);
+    addKeyListener("*", "ctrl-shift-:", () => {
+        showCommandPalette();
+        return true;
+    });
+    for (const [id, cmd] of Object.entries(commandsList)) {
+        if (cmd.shortcut) {
+            addKeyListener("*", cmd.shortcut, () => executeCommand(id));
+        }
+    }
     return palette;
 }
 
-export function toggleCommandPalette(shouldShow = true) {
-    if (palette.classList.contains("d-none") && shouldShow) {
-        palette.classList.remove("d-none");
-        selectedIdx = 0;
-        displayCommands(Object.keys(commandsList).slice(0, 5));
-        input.focus();
-    } else if (!palette.classList.contains("d-none")) {
-        palette.classList.add("d-none");
-        selectedCommand.classList.add("d-none");
-        commandsBlock.classList.remove("d-none");
-        input.value = "";
-        input.placeholder = inputPlaceholder;
-    }
+function showCommandPalette() {
+    if (!palette.classList.contains("d-none")) return;
+    palette.classList.remove("d-none");
+    selectedIdx = 0;
+    displayCommands(Object.keys(commandsList).slice(0, 5));
+    input.focus();
+}
+
+function hideCommandPalette() {
+    if (palette.classList.contains("d-none")) return;
+    palette.classList.add("d-none");
+    selectedCommand.classList.add("d-none");
+    commandsBlock.classList.remove("d-none");
+    input.value = "";
+    input.placeholder = inputPlaceholder;
 }
 
 function onCmdInput() {
@@ -61,7 +72,7 @@ function onCmdInput() {
 }
 
 function onKeyDown(ev) {
-    if (ev.key === "Escape") toggleCommandPalette();
+    if (ev.key === "Escape") hideCommandPalette();
     const commands = [...commandsBlock.querySelectorAll(":scope > *")];
     if (ev.key === "ArrowUp") {
         if (!selectedIdx) selectedIdx = commands.length - 1;
@@ -74,22 +85,30 @@ function onKeyDown(ev) {
         markSelectedCommand();
     }
     if (ev.key === "Enter") {
+        let cmdId = commandsBlock.querySelector(".selected").dataset.cmdId;
         if (!selectedCommand.classList.contains("d-none")) {
-            const cmdId =
-                commandsBlock.querySelector(".selected").dataset.cmdId;
-            const command = commandsList[cmdId];
-            command.fn(input.value);
-        } else {
-            const cmdId =
-                commandsBlock.querySelector(".selected").dataset.cmdId;
-            const command = commandsList[cmdId];
-            if (command.takesArgs) {
-                selectCommandWithQuery(cmdId);
-            } else {
-                command.fn();
-                toggleCommandPalette(false);
-            }
+            cmdId = selectedCommand.textContent;
         }
+        executeCommand(cmdId);
+    }
+}
+
+function executeCommand(id) {
+    const command = commandsList[id];
+    if (!command.takesArgs) {
+        command.fn();
+        hideCommandPalette();
+        return;
+    }
+    if (selectedCommand.classList.contains("d-none")) {
+        showCommandPalette();
+        input.value = "";
+        input.placeholder = "";
+        commandsBlock.classList.add("d-none");
+        selectedCommand.classList.remove("d-none");
+        selectedCommand.textContent = id;
+    } else {
+        command.fn(input.value);
     }
 }
 
@@ -103,6 +122,12 @@ function displayCommands(commandIds) {
         const command = document.createElement("div");
         command.innerText = commandsList[id].string;
         command.dataset.cmdId = id;
+        if (commandsList[id].shortcut) {
+            const shortcut = document.createElement("span");
+            shortcut.className = "shortcut";
+            shortcut.textContent = commandsList[id].shortcut;
+            command.append(shortcut);
+        }
         commandsBlock.append(command);
     }
     markSelectedCommand();
@@ -113,14 +138,6 @@ function markSelectedCommand() {
     commandsBlock.querySelector(".selected")?.classList.remove("selected");
     selectedIdx = Math.max(0, Math.min(selectedIdx, commands.length - 1));
     commands[selectedIdx].classList.add("selected");
-}
-
-function selectCommandWithQuery(id) {
-    input.value = "";
-    input.placeholder = "";
-    commandsBlock.classList.add("d-none");
-    selectedCommand.classList.remove("d-none");
-    selectedCommand.textContent = id;
 }
 
 function glance(query) {
@@ -165,6 +182,7 @@ const commandsList = {
         string: "Glance: preview a page",
         fn: glance,
         takesArgs: true,
+        shortcut: "ctrl-w g",
     },
     split: {
         string: "Split: open a new page in the split view",
@@ -174,10 +192,12 @@ const commandsList = {
     theme: {
         string: "Theme: toggle mode",
         fn: toggleTheme,
+        shortcut: "ctrl-w t",
     },
     compact_mode: {
-        string: "Sidebar mode: toggle",
+        string: "Sidebar: toggle (show/hide)",
         fn: () => gZenCompactModeManager.toggle(),
+        shortcut: "ctrl-w s",
     },
     add_to_essentials: {
         string: "Add current tab to essentials",
@@ -188,9 +208,13 @@ const commandsList = {
         string: "Claude: open a new claude chat with your question",
         fn: openClaude,
         takesArgs: true,
+        shortcut: "ctrl-w a i"
     },
 };
 
 export function addCommand(id, command) {
     commandsList[id] = command;
+    if (command.shortcut) {
+        addKeyListener("*", command.shortcut, () => executeCommand(id));
+    }
 }

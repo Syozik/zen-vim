@@ -7,10 +7,27 @@ export function getVisibleTabs() {
 export const state = {
     focus: "tab", // tab | sidebar | glance
     currentTab: null,
+    pressedHistory: [],
 };
+
+export const fnKeys = new Set(["Control", "Shift", "Meta", "Alt"]);
+
+export function getKey(ev) {
+    const keys = [];
+
+    if (ev.ctrlKey) keys.push("ctrl");
+    if (ev.shiftKey) keys.push("shift");
+    if (ev.altKey) keys.push("alt");
+    if (ev.metaKey) keys.push("meta");
+    if (ev.key == " ") keys.push("space");
+    else if (!fnKeys.has(ev.key)) keys.push(ev.key);
+
+    return keys.join("-");
+}
 
 // [focus: { key: callbacks[] }]
 export const listenerHandlers = {
+    "*": {},
     tab: {},
     sidebar: {},
     glance: {},
@@ -25,10 +42,15 @@ export const listenerHandlers = {
  * @param {Function} fn - callback .
  */
 export function addKeyListener(focus, key, fn) {
-    if (!(key in listenerHandlers[focus])) {
-        listenerHandlers[focus][key] = [];
+    const keys = [key];
+    const m = key.match(/^ctrl-w (\w)$/);
+    if (m) keys.push(`ctrl-w ctrl-${m[1]}`); // ctrl-w h shoudl be the same as ctrl-w ctrl-h
+    for (const k of keys) {
+        if (!(k in listenerHandlers[focus])) {
+            listenerHandlers[focus][k] = [];
+        }
+        listenerHandlers[focus][k].push(fn);
     }
-    listenerHandlers[focus][key].push(fn);
 }
 
 export function isCompactMode() {

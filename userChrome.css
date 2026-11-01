@@ -135,8 +135,18 @@
         }
 
         & > div {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             padding: 8px;
             border-radius: 6px;
+
+            & > .shortcut {
+                margin-inline-start: auto;
+                font-size: 0.85em;
+                opacity: 0.6;
+                white-space: nowrap;
+            }
 
             &.selected {
                 background: color-mix(in srgb, currentColor 10%, transparent);
