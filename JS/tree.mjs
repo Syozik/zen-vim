@@ -66,7 +66,7 @@ export function setupTree() {
         if (parentIndex < 0) return;
 
         const prevParent = gBrowser.tabs[parentIndex];
-        if (prevParent.classList.contains("foldable")) {
+        if (prevParent && prevParent.classList.contains("foldable")) {
             const nextEl = prevParent.nextElementSibling;
             if (!nextEl || getDepth(prevParent) >= getDepth(nextEl)) {
                 makeTabNotFoldable(prevParent);

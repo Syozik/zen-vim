@@ -31,6 +31,14 @@ export function addKeyListener(focus, key, fn) {
     listenerHandlers[focus][key].push(fn);
 }
 
+export function isCompactMode() {
+    return document.documentElement.getAttribute("zen-compact-mode") === "true";
+}
+
+export function isSidebarHidden() {
+    return !gZenCompactModeManager.sidebar.hasAttribute("zen-user-show");
+}
+
 function isValidUrl(string) {
     if (!/\w+\.\w+/.test(string)) return false;
     try {

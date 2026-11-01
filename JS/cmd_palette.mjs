@@ -175,6 +175,10 @@ const commandsList = {
         string: "Theme: toggle mode",
         fn: toggleTheme,
     },
+    compact_mode: {
+        string: "Sidebar mode: toggle",
+        fn: () => gZenCompactModeManager.toggle(),
+    },
     add_to_essentials: {
         string: "Add current tab to essentials",
         fn: addToEssentials,

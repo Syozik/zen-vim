@@ -71,6 +71,7 @@ In tab browsing mode:
 | `Escape`  | Exit                                                      |
 | `p`       | Move nested tab one level higher                          |
 | `t`       | Move nested tab to the top                                |
+| `q`       | Hide sidebar (toggle compact mode)                        |
 
 Available commands in the palette:
 
@@ -81,8 +82,9 @@ Available commands in the palette:
 | Claude              | Open a new claude chat with your question |
 | Preferences         | Go to the settings                        |
 | Theme               | Toggle the current theme                  |
+| Compact mode        | Toggle the sidebar mode                   |
 | Essentials          | Add current tab to essentials             |
 | Promote tab         | Move current nested tab one level higher  |
-| Promote tab to root | Move current nested tab to the top       |
+| Promote tab to root | Move current nested tab to the top        |
 
 More to be added ...

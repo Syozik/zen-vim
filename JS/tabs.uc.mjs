@@ -2,6 +2,8 @@ import { createCmdPalette, toggleCommandPalette } from "./cmd_palette.mjs";
 import {
     addKeyListener,
     getVisibleTabs,
+    isCompactMode,
+    isSidebarHidden,
     listenerHandlers,
     state,
     toggleFold,
@@ -9,8 +11,7 @@ import {
 import { setupTree } from "./tree.mjs";
 
 (() => {
-    let ctrlWPressed, timeout, glanceOwner, glancedTabIndex, sidebarHidden;
-    const sidebar = gZenCompactModeManager.sidebar;
+    let ctrlWPressed, timeout, glanceOwner, glancedTabIndex;
     createCmdPalette();
     setupTree();
 
@@ -26,9 +27,8 @@ import { setupTree } from "./tree.mjs";
         state.currentTab?.classList.remove("zen-vim-active-tab");
         state.currentTab = null;
 
-        if (sidebarHidden) {
+        if (isCompactMode() && !isSidebarHidden()) {
             gZenCompactModeManager.toggleSidebar();
-            sidebarHidden = null;
         }
         document.removeEventListener("click", exitOnClick);
         gBrowser.selectedBrowser.focus();
@@ -144,10 +144,7 @@ import { setupTree } from "./tree.mjs";
         if (focusPane(-1, 0)) return;
         state.focus = "sidebar";
         document.addEventListener("click", exitOnClick);
-        const isCompactMode =
-            document.documentElement.getAttribute("zen-compact-mode");
-        sidebarHidden = !sidebar.hasAttribute("zen-user-show");
-        if (isCompactMode && sidebarHidden)
+        if (isCompactMode() && isSidebarHidden())
             gZenCompactModeManager.toggleSidebar();
         let visibleTab = gBrowser.selectedTab;
         while (visibleTab && visibleTab.classList.contains("folded-hidden")) {
@@ -285,6 +282,12 @@ import { setupTree } from "./tree.mjs";
     addKeyListener("sidebar", "j", () => goWithStep(1));
     addKeyListener("sidebar", "k", () => goWithStep(-1));
     addKeyListener("sidebar", "h", () => goWithStep(-1));
+    addKeyListener("sidebar", "q", () => {
+        exit();
+        if (!isCompactMode()) {
+            gZenCompactModeManager.toggle();
+        }
+    });
     addKeyListener("sidebar", "!", exit);
 
     window.addEventListener("keydown", onKeyDown, true);
