@@ -1,4 +1,10 @@
-import { addKeyListener, getTranslationActor, getUrl, state, triggeringPrincipal } from "./helpers.mjs";
+import {
+    addKeyListener,
+    getTranslationActor,
+    getUrl,
+    state,
+    triggeringPrincipal,
+} from "./helpers.mjs";
 
 let palette, input, commandsBlock, selectedIdx, selectedCommand;
 
@@ -15,7 +21,6 @@ export function createCmdPalette() {
     input.placeholder = inputPlaceholder;
     input.addEventListener("blur", () => hideCommandPalette());
     input.addEventListener("input", onCmdInput);
-    input.addEventListener("keydown", onKeyDown);
     palette.append(input);
     commandsBlock = document.createElement("div");
     commandsBlock.className = "commands";
@@ -25,15 +30,7 @@ export function createCmdPalette() {
     noMatches.textContent = "No matches";
     palette.append(noMatches);
     document.body.append(palette);
-    addKeyListener("*", "ctrl-shift-:", () => {
-        showCommandPalette();
-        return true;
-    });
-    for (const [id, cmd] of Object.entries(commandsList)) {
-        if (cmd.shortcut) {
-            addKeyListener("*", cmd.shortcut, () => executeCommand(id));
-        }
-    }
+    setupPaletteKeyListeners();
     return palette;
 }
 
@@ -43,6 +40,7 @@ function showCommandPalette() {
     selectedIdx = 0;
     displayCommands(Object.keys(commandsList).slice(0, 5));
     input.focus();
+    state.focus = "cmd_palette";
 }
 
 function hideCommandPalette() {
@@ -52,6 +50,7 @@ function hideCommandPalette() {
     commandsBlock.classList.remove("d-none");
     input.value = "";
     input.placeholder = inputPlaceholder;
+    state.focus = "tab";
 }
 
 function onCmdInput() {
@@ -71,25 +70,36 @@ function onCmdInput() {
     displayCommands(displayedCommands.slice(0, 5));
 }
 
-function onKeyDown(ev) {
-    if (ev.key === "Escape") hideCommandPalette();
-    const commands = [...commandsBlock.querySelectorAll(":scope > *")];
-    if (ev.key === "ArrowUp") {
-        if (!selectedIdx) selectedIdx = commands.length - 1;
-        else selectedIdx -= 1;
+function setupPaletteKeyListeners() {
+    addKeyListener("*", "ctrl-shift-:", () => {
+        showCommandPalette();
+        return true;
+    });
+
+    addKeyListener("cmd_palette", "Escape", hideCommandPalette);
+
+    const moveWithStep = (step) => {
+        const length = commandsBlock.querySelectorAll(":scope > *").length;
+        selectedIdx = (selectedIdx + step + length) % length;
         markSelectedCommand();
     }
-    if (ev.key === "ArrowDown") {
-        if (selectedIdx === commands.length - 1) selectedIdx = 0;
-        else selectedIdx += 1;
-        markSelectedCommand();
-    }
-    if (ev.key === "Enter") {
+    addKeyListener("cmd_palette", "ArrowUp", () => moveWithStep(-1));
+    addKeyListener("cmd_palette", "ctrl-p", () => moveWithStep(-1));
+    addKeyListener("cmd_palette", "ArrowDown", () => moveWithStep(1));
+    addKeyListener("cmd_palette", "ctrl-n", () => moveWithStep(1));
+
+    addKeyListener("cmd_palette", "Enter", () => {
         let cmdId = commandsBlock.querySelector(".selected").dataset.cmdId;
         if (!selectedCommand.classList.contains("d-none")) {
             cmdId = selectedCommand.textContent;
         }
         executeCommand(cmdId);
+    });
+
+    for (const [id, cmd] of Object.entries(commandsList)) {
+        if (cmd.shortcut) {
+            addKeyListener("*", cmd.shortcut, () => executeCommand(id));
+        }
     }
 }
 
@@ -176,16 +186,18 @@ function openClaude(query) {
     gBrowser.addTrustedTab(finalUrl, { inBackground: false });
 }
 
-function togglePageTranslation() {
+async function togglePageTranslation() {
     const actor = getTranslationActor();
     const langState = actor.languageState;
     if (langState.requestedLanguagePair) {
-        actor.restorePage();
+        await actor.restorePage();
+        gBrowser.selectedBrowser.focus();
         return;
     }
     const detectedLanguages = langState.detectedLanguages;
     if (!detectedLanguages) return;
-    const { docLangTag, userLangTag, isDocLangTagSupported } = detectedLanguages;
+    const { docLangTag, userLangTag, isDocLangTagSupported } =
+        detectedLanguages;
     if (
         docLangTag &&
         userLangTag &&
@@ -196,6 +208,7 @@ function togglePageTranslation() {
             { sourceLanguage: docLangTag, targetLanguage: userLangTag },
             false,
         );
+        gBrowser.selectedBrowser.focus();
     }
 }
 
@@ -239,7 +252,7 @@ const commandsList = {
         string: "Claude: open a new claude chat with your question",
         fn: openClaude,
         takesArgs: true,
-        shortcut: "ctrl-w a i"
+        shortcut: "ctrl-w a i",
     },
 };
 

@@ -5,7 +5,7 @@ export function getVisibleTabs() {
 }
 
 export const state = {
-    focus: "tab", // tab | sidebar | glance
+    focus: "tab", // tab | sidebar | glance | cmd_palette
     currentTab: null,
     pressedHistory: [],
 };
@@ -31,6 +31,7 @@ export const listenerHandlers = {
     tab: {},
     sidebar: {},
     glance: {},
+    cmd_palette: {},
 };
 
 /**
