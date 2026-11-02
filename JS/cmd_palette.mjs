@@ -1,4 +1,4 @@
-import { addKeyListener, getUrl, triggeringPrincipal } from "./helpers.mjs";
+import { addKeyListener, getUrl, state, triggeringPrincipal } from "./helpers.mjs";
 
 let palette, input, commandsBlock, selectedIdx, selectedCommand;
 
@@ -141,9 +141,11 @@ function markSelectedCommand() {
     commands[selectedIdx].classList.add("selected");
 }
 
-function glance(query) {
+async function glance(query) {
     let url = getUrl(query);
-    gZenGlanceManager.openGlance({ url, triggeringPrincipal });
+    const tab = await gZenGlanceManager.openGlance({ url, triggeringPrincipal });
+    tab.setAttribute("zv-should-remove-glance", true);
+    state.focus = "glance";
 }
 
 async function split(query) {

@@ -87,4 +87,11 @@ Available commands in the palette:
 | Promote tab         | Move current nested tab one level higher  |            |
 | Promote tab to root | Move current nested tab to the top        |            |
 
+Shortcuts when glance is open:
+
+| Command       | Description                         |
+| ------------- | ----------------------------------- |
+| ctrl-w Escape | Closes glance                       |
+| ctrl-w Enter  | Makes glance a new tab and opens it |
+
 More to be added ...

@@ -46,6 +46,10 @@ import { setupTree } from "./tree.mjs";
 
     async function dismissGlance() {
         const glancedTab = gBrowser.selectedTab;
+        if (glancedTab.getAttribute("zv-should-remove-glance")) {
+            gZenGlanceManager.closeGlance()
+            return;
+        }
         const prevMotionOverrideValue = gReduceMotionOverride;
         gReduceMotionOverride = true;
         try {
@@ -196,11 +200,11 @@ import { setupTree } from "./tree.mjs";
             return true;
         }
     });
-    addKeyListener("glance", "Escape", async () => {
+    addKeyListener("glance", "ctrl-w Escape", async () => {
         await dismissGlance();
         exit();
     });
-    addKeyListener("glance", "Enter", async () => {
+    addKeyListener("glance", "ctrl-w Enter", async () => {
         glanceOwner = null;
         await gZenGlanceManager.fullyOpenGlance();
         exit();
@@ -246,7 +250,7 @@ import { setupTree } from "./tree.mjs";
         exit();
     });
 
-    const glance = async () => {
+    const preview = async () => {
         if (getActiveGlance()) {
             await dismissGlance();
         }
@@ -257,7 +261,8 @@ import { setupTree } from "./tree.mjs";
         exit("glance");
     };
 
-    addKeyListener("sidebar", "g", glance);
+    addKeyListener("sidebar", "g", preview);
+    addKeyListener("sidebar", " ", preview);
     addKeyListener("sidebar", "r", () => {
         state.currentTab
             .querySelector(".tab-label-container")
@@ -293,7 +298,6 @@ import { setupTree } from "./tree.mjs";
     });
 
     addKeyListener("sidebar", "Escape", exit);
-    addKeyListener("sidebar", " ", glance);
     addKeyListener("sidebar", "j", () => goWithStep(1));
     addKeyListener("sidebar", "k", () => goWithStep(-1));
     addKeyListener("sidebar", "h", () => goWithStep(-1));
