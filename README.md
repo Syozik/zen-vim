@@ -1,6 +1,10 @@
 # zen-vim
 
-Vim motions for Zen Browser tabs and splits. This mode also transforms the tab sidebar into a tree view - meaning tabs are grouped by a parent from which they were opened.
+Vim motions for Zen Browser tabs and splits.
+This mod also features:
+
+- Transform the tab sidebar into a tree view - meaning tabs are grouped by a parent from which they were opened
+- Command palette (ctrl-shift-:)
 
 It's packaged for [Sine](https://github.com/CosmoCreeper/Sine) with a manual [fx-autoconfig](https://github.com/MrOtherGuy/fx-autoconfig) option.
 
@@ -89,9 +93,9 @@ Available commands in the palette:
 
 Shortcuts when glance is open:
 
-| Command       | Description                         |
-| ------------- | ----------------------------------- |
-| ctrl-w Escape | Closes glance                       |
-| ctrl-w Enter  | Makes glance a new tab and opens it |
+| Command       | Description                   |
+| ------------- | ----------------------------- |
+| ctrl-w Escape | Closes the glance             |
+| ctrl-w Enter  | Opens the glance as a new tab |
 
 More to be added ...
