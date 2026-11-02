@@ -127,3 +127,7 @@ export function setDepth(tab, depth) {
     tab.style.setProperty("--depth-level", depth);
     SessionStore.setCustomTabValue(tab, DEPTH_KEY, String(depth));
 }
+
+export function getTranslationActor() {
+    return TranslationsParent.getTranslationsActor(gBrowser.selectedBrowser);
+}

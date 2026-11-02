@@ -19,6 +19,7 @@ export default [
                 gZenPinnedTabManager: "readonly",
                 gZenUIManager: "readonly",
                 gZenGlanceManager: "readonly",
+                TranslationsParent: "readonly",
                 SessionWindowUI: "readonly",
                 SessionStore: "readonly",
                 Services: "readonly",

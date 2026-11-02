@@ -1,4 +1,4 @@
-import { addKeyListener, getUrl, state, triggeringPrincipal } from "./helpers.mjs";
+import { addKeyListener, getTranslationActor, getUrl, state, triggeringPrincipal } from "./helpers.mjs";
 
 let palette, input, commandsBlock, selectedIdx, selectedCommand;
 
@@ -176,11 +176,30 @@ function openClaude(query) {
     gBrowser.addTrustedTab(finalUrl, { inBackground: false });
 }
 
+function togglePageTranslation() {
+    const actor = getTranslationActor();
+    const langState = actor.languageState;
+    if (langState.requestedLanguagePair) {
+        actor.restorePage();
+        return;
+    }
+    const detectedLanguages = langState.detectedLanguages;
+    if (!detectedLanguages) return;
+    const { docLangTag, userLangTag, isDocLangTagSupported } = detectedLanguages;
+    if (
+        docLangTag &&
+        userLangTag &&
+        isDocLangTagSupported &&
+        docLangTag !== userLangTag
+    ) {
+        actor.translate(
+            { sourceLanguage: docLangTag, targetLanguage: userLangTag },
+            false,
+        );
+    }
+}
+
 const commandsList = {
-    preferences: {
-        string: "Preferences: open",
-        fn: openPreferences,
-    },
     glance: {
         string: "Glance: preview a page",
         fn: glance,
@@ -193,10 +212,18 @@ const commandsList = {
         shortcut: "ctrl-w v",
         takesArgs: true,
     },
+    translate: {
+        string: "Translate: toggle page translation",
+        fn: togglePageTranslation,
+        shortcut: "ctrl-w t",
+    },
     theme: {
         string: "Theme: toggle mode",
         fn: toggleTheme,
-        shortcut: "ctrl-w t",
+    },
+    preferences: {
+        string: "Preferences: open",
+        fn: openPreferences,
     },
     compact_mode: {
         string: "Sidebar: toggle (show/hide)",

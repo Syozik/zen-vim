@@ -85,7 +85,8 @@ Available commands in the palette:
 | Split view          | Open a new split view                     | ctrl-w v   |
 | Claude              | Open a new claude chat with your question | ctrl-w a i |
 | Preferences         | Go to the settings                        |            |
-| Theme               | Toggle the current theme                  | ctrl-w t   |
+| Translation         | Toggle the page translation               | ctrl-w t   |
+| Theme               | Toggle the current theme                  |            |
 | Compact mode        | Toggle the sidebar mode                   | ctrl-w s   |
 | Essentials          | Add current tab to essentials             |            |
 | Promote tab         | Move current nested tab one level higher  |            |
