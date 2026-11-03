@@ -64,13 +64,16 @@ In tab browsing mode:
 | --------- | --------------------------------------------------------- |
 | `j` / `l` | Next tab                                                  |
 | `k` / `h` | Previous tab                                              |
+| `g g`     | Go to the first tab                                       |
+| `G`       | Go to the last tab                                        |
 | `Enter`   | Select tab                                                |
 | `r`       | Rename tab                                                |
-| `d`       | Close tab (together with its nested tabs)                 |
+| `d`       | Close tab (promoting its nested tabs)                     |
+| `D`       | Close tab (together with its nested tabs)                 |
 | `u`       | Reopen previous closed tab                                |
 | `y`       | Copy the tab's url                                        |
 | `v`       | Split tab with current (or unsplit if already in a split) |
-| `g`       | Glance tab                                                |
+| `space`   | Glance tab                                                |
 | `z`       | Fold / unfold tab group                                   |
 | `Escape`  | Exit                                                      |
 | `p`       | Move nested tab one level higher                          |

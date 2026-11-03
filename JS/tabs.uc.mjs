@@ -7,6 +7,7 @@ import {
     isCompactMode,
     isSidebarHidden,
     listenerHandlers,
+    promoteChildren,
     state,
     toggleFold,
 } from "./helpers.mjs";
@@ -222,12 +223,21 @@ import { setupTree } from "./tree.mjs";
 
     addKeyListener("sidebar", "ctrl-w l", exit);
     addKeyListener("sidebar", "l", () => goWithStep(1));
-    addKeyListener("sidebar", "d", async () => {
+
+    const deleteSelectedTab = () => {
         gZenUIManager.shakeElement(state.currentTab);
         const i = tabs.indexOf(state.currentTab);
         closeTab(state.currentTab, true);
         goTo(i);
+    };
+
+    addKeyListener("sidebar", "shift-D", () => {
+        state.currentTab.dataset.closeChildren = true;
+        deleteSelectedTab()
     });
+
+    addKeyListener("sidebar", "d", deleteSelectedTab);
+
     addKeyListener("sidebar", "v", () => {
         if (
             state.currentTab.group &&
@@ -261,8 +271,9 @@ import { setupTree } from "./tree.mjs";
         exit("glance");
     };
 
-    addKeyListener("sidebar", "g", preview);
-    addKeyListener("sidebar", " ", preview);
+    addKeyListener("sidebar", "g g", () => goTo(0));
+    addKeyListener("sidebar", "shift-G", () => goTo(tabs.length - 1));
+    addKeyListener("sidebar", "space", preview);
     addKeyListener("sidebar", "r", () => {
         state.currentTab
             .querySelector(".tab-label-container")
@@ -307,7 +318,7 @@ import { setupTree } from "./tree.mjs";
             gZenCompactModeManager.toggle();
         }
     });
-    addKeyListener("sidebar", "!", exit);
+    // addKeyListener("sidebar", "!", exit);
 
     window.addEventListener("keydown", onKeyDown, true);
 })();

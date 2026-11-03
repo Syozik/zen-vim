@@ -4,6 +4,7 @@ import {
     DEPTH_KEY,
     getDepth,
     getVisibleTabs,
+    promoteChildren,
     setDepth,
     state,
     toggleFold,
@@ -88,6 +89,10 @@ export function setupTree() {
 
     function onTabClose(e) {
         const tab = e.target;
+        if (tab.dataset.closeChildren !== "true") {
+            promoteChildren(tab);
+            return;
+        };
         const depthLevel = getDepth(tab);
         const descendants = [];
         let nextTab = tab.nextElementSibling;
