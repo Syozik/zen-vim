@@ -13,7 +13,7 @@ This works best when combined with vim motions extension for pages: https://gith
 Unfortunately, vimium extension is great, but it works only with pages, so you can't really interact with
 the browser UI with it, that's why I needed this project to closes that gap.
 
-https://github.com/user-attachments/assets/9e922b98-6b9d-4f98-b425-3985986a3a22
+https://github.com/user-attachments/assets/0c2e8331-c222-4a57-92ec-bdc4783be9f1
 
 ## Install
 
