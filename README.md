@@ -11,9 +11,9 @@ It's packaged for [Sine](https://github.com/CosmoCreeper/Sine) with a manual [fx
 This works best when combined with vim motions extension for pages: https://github.com/philc/vimium
 
 Unfortunately, vimium extension is great, but it works only with pages, so you can't really interact with
-the browser UI with it, that's why I needed this project to closes that gap.
+the browser UI with it, that's why I needed this project to close that gap.
 
-https://github.com/user-attachments/assets/0c2e8331-c222-4a57-92ec-bdc4783be9f1
+https://github.com/user-attachments/assets/5b780c4b-b60b-4100-a27a-3cfde0032074
 
 ## Install
 
