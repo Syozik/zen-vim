@@ -32,7 +32,7 @@ export function setupTree() {
     }
 
     function makeTabFoldable(tab) {
-        if (tab.classList.contains("foldable")) return;
+        if (isFoldable(tab)) return;
         tab.classList.add("foldable");
         const btn = document.createElement("div");
         btn.className = "zen-vim-fold-btn";
@@ -44,7 +44,12 @@ export function setupTree() {
         tab.querySelector(".tab-content").prepend(btn);
     }
 
+    function isFoldable(tab) {
+        return tab && tab.classList.contains("foldable");
+    }
+
     function makeTabNotFoldable(tab) {
+        if (!isFoldable(tab)) return;
         tab.classList.remove("foldable");
         tab.querySelector(".zen-vim-fold-btn")?.remove();
     }
@@ -87,13 +92,27 @@ export function setupTree() {
             .forEach((t) => SessionStore.undoCloseById(t.closedId));
     }
 
+    function updateTab(tab) {
+        if (!tab) return;
+        const nextTab = tab.nextElementSibling;
+        if (nextTab && getDepth(nextTab) <= getDepth(tab)) {
+            makeTabNotFoldable(tab);
+        }
+    }
+
     function onTabClose(e) {
         const tab = e.target;
+        const depthLevel = getDepth(tab);
+
+        const prevTab = tab.previousElementSibling;
+        const prevTabDepth = getDepth(tab);
+
         if (tab.dataset.closeChildren !== "true") {
             promoteChildren(tab);
+            tab.remove();
+            updateTab(prevTab);
             return;
         };
-        const depthLevel = getDepth(tab);
         const descendants = [];
         let nextTab = tab.nextElementSibling;
         while (nextTab && getDepth(nextTab) > depthLevel) {
@@ -108,13 +127,8 @@ export function setupTree() {
                 gBrowser.removeTab(child, { animate: true });
             }
         }
-        const prevTab = tab.previousElementSibling;
-        const prevTabDepth = getDepth(prevTab);
-        if (prevTab && prevTabDepth < depthLevel) {
-            if (!nextTab || prevTabDepth >= getDepth(nextTab)) {
-                makeTabNotFoldable(prevTab);
-            }
-        }
+        tab.remove();
+        updateTab(prevTab);
     }
 
     function onDragStart(e) {
