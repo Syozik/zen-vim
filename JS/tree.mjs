@@ -4,11 +4,61 @@ import {
     DEPTH_KEY,
     getDepth,
     getVisibleTabs,
-    promoteChildren,
     setDepth,
     state,
     toggleFold,
 } from "./helpers.mjs";
+
+function isFoldable(tab) {
+    return tab && tab.classList.contains("foldable");
+}
+
+function makeTabNotFoldable(tab) {
+    if (!isFoldable(tab)) return;
+    tab.classList.remove("foldable");
+    tab.querySelector(".zen-vim-fold-btn")?.remove();
+}
+
+function promoteChildren(tab) {
+    const depth = getDepth(tab);
+    let nextTab = tab.nextElementSibling;
+    while (nextTab && getDepth(nextTab) > depth) {
+        setDepth(nextTab, getDepth(nextTab) - 1);
+        nextTab = nextTab.nextElementSibling;
+    }
+    makeTabNotFoldable(tab);
+}
+
+function promoteTab(tab, minDepth) {
+    const currentDepth = getDepth(tab);
+    if (!currentDepth) return;
+    let prevTab = tab.previousElementSibling;
+    while (getDepth(prevTab) > minDepth) {
+        prevTab = prevTab.previousElementSibling;
+    }
+    let idx = gBrowser.visibleTabs.indexOf(prevTab) + 1;
+    setDepth(tab, minDepth);
+    let nextTab = tab.nextElementSibling;
+    gBrowser.moveTabTo(tab, { tabIndex: idx++ });
+    while (nextTab && getDepth(nextTab) > currentDepth) {
+        gBrowser.moveTabTo(nextTab, { tabIndex: idx++ });
+        setDepth(nextTab, getDepth(nextTab) - currentDepth + minDepth);
+        nextTab = nextTab.nextElementSibling;
+    }
+}
+
+function oneLevelHigher(tab = gBrowser.selectedTab) {
+    const currentDepth = getDepth(tab);
+    promoteTab(tab, currentDepth - 1);
+}
+
+function updateTab(tab) {
+    if (!tab) return;
+    const nextTab = tab.nextElementSibling;
+    if (nextTab && getDepth(nextTab) <= getDepth(tab)) {
+        makeTabNotFoldable(tab);
+    }
+}
 
 export function setupTree() {
     const TAB_ID_KEY = "zen-vim-tab-id";
@@ -42,16 +92,6 @@ export function setupTree() {
             toggleFold(tab);
         });
         tab.querySelector(".tab-content").prepend(btn);
-    }
-
-    function isFoldable(tab) {
-        return tab && tab.classList.contains("foldable");
-    }
-
-    function makeTabNotFoldable(tab) {
-        if (!isFoldable(tab)) return;
-        tab.classList.remove("foldable");
-        tab.querySelector(".zen-vim-fold-btn")?.remove();
     }
 
     function onNewTabOpen(e) {
@@ -92,27 +132,18 @@ export function setupTree() {
             .forEach((t) => SessionStore.undoCloseById(t.closedId));
     }
 
-    function updateTab(tab) {
-        if (!tab) return;
-        const nextTab = tab.nextElementSibling;
-        if (nextTab && getDepth(nextTab) <= getDepth(tab)) {
-            makeTabNotFoldable(tab);
-        }
-    }
-
     function onTabClose(e) {
         const tab = e.target;
         const depthLevel = getDepth(tab);
 
         const prevTab = tab.previousElementSibling;
-        const prevTabDepth = getDepth(tab);
 
         if (tab.dataset.closeChildren !== "true") {
             promoteChildren(tab);
             tab.remove();
             updateTab(prevTab);
             return;
-        };
+        }
         const descendants = [];
         let nextTab = tab.nextElementSibling;
         while (nextTab && getDepth(nextTab) > depthLevel) {
@@ -155,39 +186,21 @@ export function setupTree() {
         });
     }
 
-    function promoteTab(tab, minDepth) {
-        const currentDepth = getDepth(tab);
-        if (!currentDepth) return;
-        let prevTab = tab.previousElementSibling;
-        while (getDepth(prevTab) > minDepth) {
-            prevTab = prevTab.previousElementSibling;
-        }
-        let idx = gBrowser.visibleTabs.indexOf(prevTab) + 1;
-        setDepth(tab, minDepth);
-        let nextTab = tab.nextElementSibling;
-        gBrowser.moveTabTo(tab, { tabIndex: idx++ });
-        while (nextTab && getDepth(nextTab) > currentDepth) {
-            gBrowser.moveTabTo(nextTab, { tabIndex: idx++ });
-            setDepth(nextTab, getDepth(nextTab) - currentDepth + minDepth);
-            nextTab = nextTab.nextElementSibling;
-        }
-    }
-
-    function oneLevelHigher(tab = gBrowser.selectedTab) {
-        const currentDepth = getDepth(tab);
-        promoteTab(tab, currentDepth - 1);
-    }
-
     addKeyListener("sidebar", "p", () => oneLevelHigher(state.currentTab));
     addKeyListener("sidebar", "t", () => promoteTab(state.currentTab, 0));
+    addKeyListener("sidebar", "c", () => promoteChildren(state.currentTab));
 
     addCommand("promoteTab", {
-        string: "Tree: move current tab one level higher",
+        string: "Tree: promote tab one level higher",
         fn: oneLevelHigher,
     });
     addCommand("promoteTabToRoot", {
-        string: "Tree: move current tab to the top",
+        string: "Tree: promote tab to the top",
         fn: () => promoteTab(gBrowser.selectedTab, 0),
+    });
+    addCommand("promoteTabChildren", {
+        string: "Tree: promote tab's children",
+        fn: () => promoteChildren(gBrowser.selectedTab),
     });
 
     // a little hack for now.

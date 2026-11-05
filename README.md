@@ -70,7 +70,8 @@ In tab browsing mode:
 | `r`       | Rename tab                                                |
 | `d`       | Close tab (promoting its nested tabs)                     |
 | `D`       | Close tab (together with its nested tabs)                 |
-| `u`       | Reopen previous closed tab                                |
+| `c`       | Promote tab's children                                    |
+| `u`       | Reopen previously closed tab                              |
 | `y`       | Copy the tab's url                                        |
 | `v`       | Split tab with current (or unsplit if already in a split) |
 | `space`   | Glance tab                                                |
@@ -82,18 +83,19 @@ In tab browsing mode:
 
 Available commands in the palette:
 
-| Command             | Description                               | Shortcut   |
-| ------------------- | ----------------------------------------- | ---------- |
-| Glance              | Open a new glance                         | ctrl-w g   |
-| Split view          | Open a new split view                     | ctrl-w v   |
-| Claude              | Open a new claude chat with your question | ctrl-w a i |
-| Preferences         | Go to the settings                        |            |
-| Translation         | Toggle the page translation               | ctrl-w t   |
-| Theme               | Toggle the current theme                  |            |
-| Compact mode        | Toggle the sidebar mode                   | ctrl-w s   |
-| Essentials          | Add current tab to essentials             |            |
-| Promote tab         | Move current nested tab one level higher  |            |
-| Promote tab to root | Move current nested tab to the top        |            |
+| Command                | Description                               | Shortcut   |
+| ---------------------- | ----------------------------------------- | ---------- |
+| Glance                 | Open a new glance                         | ctrl-w g   |
+| Split view             | Open a new split view                     | ctrl-w v   |
+| Claude                 | Open a new claude chat with your question | ctrl-w a i |
+| Preferences            | Go to the settings                        |            |
+| Translation            | Toggle the page translation               | ctrl-w t   |
+| Theme                  | Toggle the current theme                  |            |
+| Compact mode           | Toggle the sidebar mode                   | ctrl-w s   |
+| Essentials             | Add current tab to essentials             |            |
+| Promote tab            | Move current nested tab one level higher  |            |
+| Promote tab to root    | Move current nested tab to the top        |            |
+| Promote tab's children | Move current nested tab to the top        |            |
 
 To move between commands in the palette use arrows or ctrl-n/ctrl-p.
 
@@ -104,6 +106,6 @@ Shortcuts when glance is open:
 | ctrl-w Escape | Closes the glance             |
 | ctrl-w Enter  | Opens the glance as a new tab |
 
-More keybinds and commands to be added ...
+More keybindings and commands to be added ...
 
 **Contributions, ideas, thoughts will be highly appreciated! Feel free to open an issue or a pull request.**

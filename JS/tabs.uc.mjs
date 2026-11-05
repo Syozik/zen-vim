@@ -7,7 +7,6 @@ import {
     isCompactMode,
     isSidebarHidden,
     listenerHandlers,
-    promoteChildren,
     state,
     toggleFold,
 } from "./helpers.mjs";

@@ -132,15 +132,3 @@ export function setDepth(tab, depth) {
 export function getTranslationActor() {
     return TranslationsParent.getTranslationsActor(gBrowser.selectedBrowser);
 }
-
-export function promoteChildren(tab) {
-    const depth = getDepth(tab);
-    let tabIndex = gBrowser.tabs.indexOf(tab);
-    let nextTab = tab.nextElementSibling;
-    while (nextTab && getDepth(nextTab) > depth) {
-        setDepth(nextTab, getDepth(nextTab) - 1);
-        const nTab = nextTab.nextElementSibling;
-        gBrowser.moveTabTo(nextTab, { tabIndex: tabIndex++ });
-        nextTab = nTab;
-    }
-}
