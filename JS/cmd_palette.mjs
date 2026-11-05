@@ -164,12 +164,12 @@ async function split(query) {
     gZenViewSplitter.splitTabs([gBrowser.selectedTab, tab], undefined, 1);
 }
 
-function openPreferences() {
-    gBrowser.addTrustedTab("about:preferences", { inBackground: false });
+function openTab(url) {
+    gBrowser.addTrustedTab(url, { inBackground: false });
 }
 
-function openDownloads() {
-    gBrowser.addTrustedTab("about:downloads", { inBackground: false });
+function page(string, url) {
+    return { string, fn: () => openTab(url) };
 }
 
 function toggleTheme() {
@@ -184,10 +184,8 @@ function addToEssentials() {
 // TODO: right now claude says that the pasted query might be dangerous
 // i'll find a way to bypass it later.
 function openClaude(query) {
-    const base = "https://claude.ai/new";
     const params = new URLSearchParams({ q: query });
-    const finalUrl = `${base}?${params.toString()}`;
-    gBrowser.addTrustedTab(finalUrl, { inBackground: false });
+    openTab(`https://claude.ai/new?${params}`);
 }
 
 async function togglePageTranslation() {
@@ -238,14 +236,24 @@ const commandsList = {
         string: "Theme: toggle mode",
         fn: toggleTheme,
     },
-    preferences: {
-        string: "Preferences: open",
-        fn: openPreferences,
-    },
-    downloads: {
-        string: "Downloads: open",
-        fn: openDownloads,
-    },
+    preferences: page("Preferences: open", "about:preferences"),
+    preferences_search: page("Preferences: search engines", "about:preferences#search"),
+    preferences_privacy: page("Preferences: privacy & security", "about:preferences#privacy"),
+    preferences_sync: page("Preferences: sync", "about:preferences#sync"),
+    downloads: page("Downloads: open", "about:downloads"),
+    pdf: page("PDF tool: open", "about:pdf"),
+    task_manager: page("Task Manager: open", "about:processes"),
+    unloads: page("Tabs: unload to free memory", "about:unloads"),
+    addons: page("Add-ons: manage", "about:addons"),
+    logins: page("Passwords: open", "about:logins"),
+    config: page("Config: open", "about:config"),
+    keyboard: page("Shortcuts: edit", "about:keyboard"),
+    profiles: page("Profiles: manage", "about:profiles"),
+    protections: page("Privacy: protections dashboard", "about:protections"),
+    support: page("Troubleshooting: info", "about:support"),
+    debugging: page("Debugging: extensions & workers", "about:debugging"),
+    memory: page("Memory: report", "about:memory"),
+    policies: page("Policies: view", "about:policies"),
     compact_mode: {
         string: "Sidebar: toggle (show/hide)",
         fn: () => gZenCompactModeManager.toggle(),
