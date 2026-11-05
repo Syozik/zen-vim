@@ -168,6 +168,10 @@ function openPreferences() {
     gBrowser.addTrustedTab("about:preferences", { inBackground: false });
 }
 
+function openDownloads() {
+    gBrowser.addTrustedTab("about:downloads", { inBackground: false });
+}
+
 function toggleTheme() {
     const currentTheme = Services.prefs.getIntPref("zen.view.window.scheme"); // 0 or 1
     Services.prefs.setIntPref("zen.view.window.scheme", (currentTheme + 1) % 2);
@@ -237,6 +241,10 @@ const commandsList = {
     preferences: {
         string: "Preferences: open",
         fn: openPreferences,
+    },
+    downloads: {
+        string: "Downloads: open",
+        fn: openDownloads,
     },
     compact_mode: {
         string: "Sidebar: toggle (show/hide)",
