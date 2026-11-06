@@ -81,6 +81,9 @@ In tab browsing mode:
 | `t`       | Move nested tab to the top                                |
 | `q`       | Hide sidebar (toggle compact mode)                        |
 
+By default, the normal click to close a tab doesn't close its children.
+To close children as well - hold Shift while closing the tab.
+
 Available commands in the palette:
 
 | Command                | Description                               | Shortcut   |

@@ -1,15 +1,12 @@
 import { createCmdPalette } from "./cmd_palette.mjs";
 import {
-    addKeyListener,
-    fnKeys,
-    getKey,
     getVisibleTabs,
     isCompactMode,
     isSidebarHidden,
-    listenerHandlers,
     state,
     toggleFold,
 } from "./helpers.mjs";
+import { addKeyListener, fnKeys, getKey, listenerHandlers } from "./keyboard.mjs";
 import { setupTree } from "./tree.mjs";
 
 (() => {
@@ -230,12 +227,7 @@ import { setupTree } from "./tree.mjs";
         goTo(i);
     };
 
-    addKeyListener("sidebar", "shift-D", () => {
-        state.currentTab.dataset.closeChildren = true;
-        deleteSelectedTab()
-    });
-
-    addKeyListener("sidebar", "d", deleteSelectedTab);
+    addKeyListener("sidebar", ["d", "shift-D"], deleteSelectedTab);
 
     addKeyListener("sidebar", "v", () => {
         if (

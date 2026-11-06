@@ -1,10 +1,10 @@
 import {
-    addKeyListener,
     getTranslationActor,
     getUrl,
     state,
     triggeringPrincipal,
 } from "./helpers.mjs";
+import { addKeyListener } from "./keyboard.mjs";
 
 let palette, input, commandsBlock, selectedIdx, selectedCommand;
 

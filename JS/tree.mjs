@@ -1,6 +1,5 @@
 import { addCommand } from "./cmd_palette.mjs";
 import {
-    addKeyListener,
     DEPTH_KEY,
     getDepth,
     getVisibleTabs,
@@ -8,6 +7,7 @@ import {
     state,
     toggleFold,
 } from "./helpers.mjs";
+import { addKeyListener, isHolding } from "./keyboard.mjs";
 
 function isFoldable(tab) {
     return tab && tab.classList.contains("foldable");
@@ -58,6 +58,28 @@ function updateTab(tab) {
     if (nextTab && getDepth(nextTab) <= getDepth(tab)) {
         makeTabNotFoldable(tab);
     }
+}
+
+function waitForTabRemoval(tab, timeout = 2000) {
+    return new Promise((resolve) => {
+        if (!tab.isConnected) return resolve();
+
+        const observer = new MutationObserver(() => {
+            if (!tab.isConnected) done();
+        });
+        const timer = setTimeout(done, timeout);
+
+        function done() {
+            observer.disconnect();
+            clearTimeout(timer);
+            resolve();
+        }
+
+        observer.observe(gBrowser.tabContainer, {
+            childList: true,
+            subtree: true,
+        });
+    });
 }
 
 export function setupTree() {
@@ -132,33 +154,31 @@ export function setupTree() {
             .forEach((t) => SessionStore.undoCloseById(t.closedId));
     }
 
-    function onTabClose(e) {
+    async function onTabClose(e) {
         const tab = e.target;
         const depthLevel = getDepth(tab);
 
         const prevTab = tab.previousElementSibling;
 
-        if (tab.dataset.closeChildren !== "true") {
-            promoteChildren(tab);
-            tab.remove();
-            updateTab(prevTab);
-            return;
-        }
-        const descendants = [];
-        let nextTab = tab.nextElementSibling;
-        while (nextTab && getDepth(nextTab) > depthLevel) {
-            descendants.push(nextTab);
-            nextTab = nextTab.nextElementSibling;
-        }
-        if (descendants.length) {
-            const id = getTabId(tab);
-            for (const child of descendants.reverse()) {
-                gZenUIManager.shakeElement(child);
-                SessionStore.setCustomTabValue(child, PARENT_KEY, id);
-                gBrowser.removeTab(child, { animate: true });
+        if (isHolding("shift")) {
+            const descendants = [];
+            let nextTab = tab.nextElementSibling;
+            while (nextTab && getDepth(nextTab) > depthLevel) {
+                descendants.push(nextTab);
+                nextTab = nextTab.nextElementSibling;
             }
+            if (descendants.length) {
+                const id = getTabId(tab);
+                for (const child of descendants.reverse()) {
+                    gZenUIManager.shakeElement(child);
+                    SessionStore.setCustomTabValue(child, PARENT_KEY, id);
+                    gBrowser.removeTab(child, { animate: true });
+                }
+            }
+        } else {
+            promoteChildren(tab);
         }
-        tab.remove();
+        await waitForTabRemoval(tab);
         updateTab(prevTab);
     }
 
@@ -216,6 +236,11 @@ export function setupTree() {
         }
     }, 100);
 
+    gBrowser.tabContainer.addEventListener("click", (ev) => {
+        if (!ev.target.matches(".tab-close-button")) return;
+        const tab = ev.target.closest("tab");
+        gBrowser.removeTab(tab, { animate: true });
+    });
     gBrowser.tabContainer.addEventListener("TabOpen", onNewTabOpen);
     gBrowser.tabContainer.addEventListener("TabMove", onTabMove);
     window.addEventListener("TabClose", onTabClose, true);
