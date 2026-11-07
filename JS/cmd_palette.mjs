@@ -275,6 +275,6 @@ const commandsList = {
 export function addCommand(id, command) {
     commandsList[id] = command;
     if (command.shortcut) {
-        addKeyListener("*", command.shortcut, () => executeCommand(id));
+        addKeyListener("tab", command.shortcut, () => executeCommand(id));
     }
 }
