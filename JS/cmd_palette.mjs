@@ -6,7 +6,7 @@ import {
 } from "./helpers.mjs";
 import { addKeyListener } from "./keyboard.mjs";
 
-let palette, input, commandsBlock, selectedIdx, selectedCommand;
+let palette, input, commandsBlock, selectedIdx, activeCommand;
 
 const inputPlaceholder = "Execute a command";
 
@@ -14,12 +14,11 @@ export function createCmdPalette() {
     palette = document.createElement("div");
     palette.id = "zv-command-palette";
     palette.className = "d-none";
-    selectedCommand = document.createElement("p");
-    selectedCommand.classList.add("selected-command", "d-none");
-    palette.append(selectedCommand);
+    activeCommand = document.createElement("p");
+    activeCommand.classList.add("selected-command", "d-none");
+    palette.append(activeCommand);
     input = document.createElement("input");
     input.placeholder = inputPlaceholder;
-    input.addEventListener("blur", () => hideCommandPalette());
     input.addEventListener("input", onCmdInput);
     palette.append(input);
     commandsBlock = document.createElement("div");
@@ -30,6 +29,14 @@ export function createCmdPalette() {
     noMatches.textContent = "No matches";
     palette.append(noMatches);
     document.body.append(palette);
+    document.addEventListener("click", (ev) => {
+        if (ev.target === input) return;
+        if (ev.target.matches(".commands > *")) {
+            executeCommand(ev.target.dataset.cmdId);
+        } else {
+            hideCommandPalette();
+        }
+    });
     setupPaletteKeyListeners();
     return palette;
 }
@@ -38,7 +45,7 @@ function showCommandPalette() {
     if (!palette.classList.contains("d-none")) return;
     palette.classList.remove("d-none");
     selectedIdx = 0;
-    displayCommands(Object.keys(commandsList).slice(0, 5));
+    displayCommands(Object.keys(commandsList));
     input.focus();
     state.focus = "cmd_palette";
 }
@@ -46,15 +53,16 @@ function showCommandPalette() {
 function hideCommandPalette() {
     if (palette.classList.contains("d-none")) return;
     palette.classList.add("d-none");
-    selectedCommand.classList.add("d-none");
+    activeCommand.classList.add("d-none");
     commandsBlock.classList.remove("d-none");
+    commandsBlock.scroll(0, 0);
     input.value = "";
     input.placeholder = inputPlaceholder;
     state.focus = "tab";
 }
 
 function onCmdInput() {
-    if (!selectedCommand.classList.contains("d-none")) return;
+    if (!activeCommand.classList.contains("d-none")) return;
     const command = input.value;
     const ids = Object.keys(commandsList);
     const displayedCommands = [];
@@ -67,11 +75,11 @@ function onCmdInput() {
             displayedCommands.push(id);
         }
     }
-    displayCommands(displayedCommands.slice(0, 5));
+    displayCommands(displayedCommands);
 }
 
 function setupPaletteKeyListeners() {
-    addKeyListener("*", "ctrl-shift-:", () => {
+    addKeyListener("tab", "ctrl-shift-:", () => {
         showCommandPalette();
         return true;
     });
@@ -81,7 +89,7 @@ function setupPaletteKeyListeners() {
     const moveWithStep = (step) => {
         const length = commandsBlock.querySelectorAll(":scope > *").length;
         selectedIdx = (selectedIdx + step + length) % length;
-        markSelectedCommand();
+        markFocusedCommand();
     }
     addKeyListener("cmd_palette", "ArrowUp", () => moveWithStep(-1));
     addKeyListener("cmd_palette", "ctrl-p", () => moveWithStep(-1));
@@ -90,15 +98,15 @@ function setupPaletteKeyListeners() {
 
     addKeyListener("cmd_palette", "Enter", () => {
         let cmdId = commandsBlock.querySelector(".selected").dataset.cmdId;
-        if (!selectedCommand.classList.contains("d-none")) {
-            cmdId = selectedCommand.textContent;
+        if (!activeCommand.classList.contains("d-none")) {
+            cmdId = activeCommand.textContent;
         }
         executeCommand(cmdId);
     });
 
     for (const [id, cmd] of Object.entries(commandsList)) {
         if (cmd.shortcut) {
-            addKeyListener("*", cmd.shortcut, () => executeCommand(id));
+            addKeyListener("tab", cmd.shortcut, () => executeCommand(id));
         }
     }
 }
@@ -110,13 +118,14 @@ function executeCommand(id) {
         hideCommandPalette();
         return;
     }
-    if (selectedCommand.classList.contains("d-none")) {
+    if (activeCommand.classList.contains("d-none")) {
         showCommandPalette();
+        input.focus();
         input.value = "";
         input.placeholder = "";
         commandsBlock.classList.add("d-none");
-        selectedCommand.classList.remove("d-none");
-        selectedCommand.textContent = id;
+        activeCommand.classList.remove("d-none");
+        activeCommand.textContent = id;
     } else {
         command.fn(input.value);
         hideCommandPalette();
@@ -141,14 +150,25 @@ function displayCommands(commandIds) {
         }
         commandsBlock.append(command);
     }
-    markSelectedCommand();
+    markFocusedCommand();
 }
 
-function markSelectedCommand() {
+function markFocusedCommand() {
     const commands = [...commandsBlock.querySelectorAll(":scope > *")];
     commandsBlock.querySelector(".selected")?.classList.remove("selected");
     selectedIdx = Math.max(0, Math.min(selectedIdx, commands.length - 1));
-    commands[selectedIdx].classList.add("selected");
+    const focusedCommand = commands[selectedIdx];
+    focusedCommand.classList.add("selected");
+    // if out of the viewport -> scroll
+    const cmdRect = focusedCommand.getBoundingClientRect();
+    const cmdBlockRect = commandsBlock.getBoundingClientRect();
+    const bottomDiff = cmdRect.bottom - cmdBlockRect.bottom;
+    const topDiff = cmdRect.top - cmdBlockRect.top;
+    if (bottomDiff >= 0) {
+        commandsBlock.scroll({ top: commandsBlock.scrollTop + bottomDiff + 15 });
+    } else if (topDiff <= 0) {
+        commandsBlock.scroll({ top: commandsBlock.scrollTop + topDiff - 15 });
+    }
 }
 
 async function glance(query) {
