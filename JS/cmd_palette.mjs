@@ -41,11 +41,29 @@ export function createCmdPalette() {
     return palette;
 }
 
+const COMMANDS_HISTORY_KEY = "zv-commands-history";
+
+function getHistory() {
+    const historyStr = SessionStore.getCustomGlobalValue(COMMANDS_HISTORY_KEY);
+    if (!historyStr) return [];
+    return historyStr.split("---");
+}
+
+function getSortedCommands() {
+    const history = getHistory();
+    const sortedCommands = history.reverse();
+    const usedCommands = new Set(history);
+    return [
+        ...sortedCommands,
+        ...Object.keys(commandsList).filter((cmd) => !usedCommands.has(cmd)),
+    ];
+}
+
 function showCommandPalette() {
     if (!palette.classList.contains("d-none")) return;
     palette.classList.remove("d-none");
     selectedIdx = 0;
-    displayCommands(Object.keys(commandsList));
+    displayCommands(getSortedCommands());
     input.focus();
     state.focus = "cmd_palette";
 }
@@ -64,8 +82,8 @@ function hideCommandPalette() {
 function onCmdInput() {
     if (!activeCommand.classList.contains("d-none")) return;
     const command = input.value;
-    const ids = Object.keys(commandsList);
     const displayedCommands = [];
+    const ids = getSortedCommands();
     for (const id of ids) {
         if (
             commandsList[id].string
@@ -112,6 +130,10 @@ function setupPaletteKeyListeners() {
 }
 
 function executeCommand(id) {
+    let history = getHistory();
+    history = history.filter((cmdId) => cmdId !== id);
+    history.push(id);
+    SessionStore.setCustomGlobalValue(COMMANDS_HISTORY_KEY, history.join("---"));
     const command = commandsList[id];
     if (!command.takesArgs) {
         command.fn();

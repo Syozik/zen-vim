@@ -101,6 +101,7 @@ Available commands in the palette:
 | Promote tab's children | Move current nested tab to the top        |            |
 
 To move between commands in the palette use arrows or ctrl-n/ctrl-p.
+Commands in the palette are ordered: you last used command is at the top. 
 
 Shortcuts when glance is open:
 
