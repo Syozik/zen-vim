@@ -3,6 +3,7 @@ import {
     getVisibleTabs,
     isCompactMode,
     isSidebarHidden,
+    isSidebarOnTheLeft,
     state,
     toggleFold,
     isDigit,
@@ -171,8 +172,7 @@ import { setupTree } from "./tree.mjs";
         return true;
     });
 
-    addKeyListener("tab", "ctrl-w h", () => {
-        if (focusPane(-1, 0)) return;
+    const focusSidebar = () => {
         state.focus = "sidebar";
         document.addEventListener("click", exitOnClick);
         if (isCompactMode() && isSidebarHidden())
@@ -182,8 +182,16 @@ import { setupTree } from "./tree.mjs";
             visibleTab = visibleTab.previousElementSibling;
         }
         mark(visibleTab);
+    }
+
+    addKeyListener("tab", "ctrl-w h", () => {
+        if (focusPane(-1, 0) || !isSidebarOnTheLeft()) return;
+        focusSidebar();
     });
-    addKeyListener("tab", "ctrl-w l", () => focusPane(1, 0));
+    addKeyListener("tab", "ctrl-w l", () => {
+        if (focusPane(1, 0) || isSidebarOnTheLeft()) return;
+        focusSidebar();
+    });
     addKeyListener("tab", "ctrl-w j", () => focusPane(0, 1));
     addKeyListener("tab", "ctrl-w k", () => focusPane(0, -1));
     addKeyListener("tab", "ctrl-w c", closeTab);
@@ -227,7 +235,13 @@ import { setupTree } from "./tree.mjs";
     const goTo = (idx) =>
         mark(tabs[Math.max(0, Math.min(idx, tabs.length - 1))]);
 
-    addKeyListener("sidebar", "ctrl-w l", exit);
+    addKeyListener("sidebar", "ctrl-w l", () => {
+        if (isSidebarOnTheLeft()) exit();
+    });
+    addKeyListener("sidebar", "ctrl-w h", () => {
+        if (!isSidebarOnTheLeft()) exit();
+    });
+
     addKeyListener("sidebar", "l", (step = 1) => goWithStep(step));
 
     const deleteSelectedTab = () => {

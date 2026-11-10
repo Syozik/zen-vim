@@ -89,6 +89,10 @@ export function getTranslationActor() {
     return TranslationsParent.getTranslationsActor(gBrowser.selectedBrowser);
 }
 
+export function isSidebarOnTheLeft() {
+    return !Services.prefs.getBoolPref("zen.tabs.vertical.right-side");
+}
+
 export function isDigit(k) {
     return "0" <= k && k <= "9";
 }
