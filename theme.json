@@ -21,7 +21,7 @@
     "chrome": "userChrome.css"
   },
   "scripts": {
-    "JS/tabs.uc.mjs": {
+    "JS/main.uc.mjs": {
       "include": [
         "chrome://browser/content/browser.xhtml"
       ]

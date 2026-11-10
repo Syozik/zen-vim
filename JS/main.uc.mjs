@@ -5,6 +5,7 @@ import {
     isSidebarHidden,
     state,
     toggleFold,
+    isDigit,
 } from "./helpers.mjs";
 import { addKeyListener, fnKeys, getKey, listenerHandlers } from "./keyboard.mjs";
 import { setupTree } from "./tree.mjs";
@@ -121,17 +122,26 @@ import { setupTree } from "./tree.mjs";
             const key = state.pressedHistory
                 .slice(historyLength - length)
                 .join(" ");
+
+            const digits = [];
+            let i = historyLength - length - 1;
+            while (i >= 0 && isDigit(state.pressedHistory[i])) {
+                digits.push(state.pressedHistory[i]);
+                i -= 1;
+            }
+            const multiplier = parseInt(digits.reverse().join("")) || undefined;
+
             if (key in globalHandlers) {
                 stop();
-                if (globalHandlers[key].some((fn) => fn())) {
+                if (globalHandlers[key].some((fn) => fn(multiplier))) {
                     return;
                 }
             }
 
-            if (handlers && !handlers["*"]?.some((fn) => fn())) {
+            if (handlers && !handlers["*"]?.some((fn) => fn(multiplier))) {
                 if (key in handlers) {
                     stop();
-                    handlers[key].some((fn) => fn());
+                    handlers[key].some((fn) => fn(multiplier));
                     foundKey = true;
                     break;
                 }
@@ -218,7 +228,7 @@ import { setupTree } from "./tree.mjs";
         mark(tabs[Math.max(0, Math.min(idx, tabs.length - 1))]);
 
     addKeyListener("sidebar", "ctrl-w l", exit);
-    addKeyListener("sidebar", "l", () => goWithStep(1));
+    addKeyListener("sidebar", "l", (step = 1) => goWithStep(step));
 
     const deleteSelectedTab = () => {
         gZenUIManager.shakeElement(state.currentTab);
@@ -300,9 +310,9 @@ import { setupTree } from "./tree.mjs";
     });
 
     addKeyListener("sidebar", "Escape", exit);
-    addKeyListener("sidebar", "j", () => goWithStep(1));
-    addKeyListener("sidebar", "k", () => goWithStep(-1));
-    addKeyListener("sidebar", "h", () => goWithStep(-1));
+    addKeyListener("sidebar", "j", (step = 1) => goWithStep(step));
+    addKeyListener("sidebar", "k", (step = 1) => goWithStep(-step));
+    addKeyListener("sidebar", "h", (step = 1) => goWithStep(-step));
     addKeyListener("sidebar", "q", () => {
         exit();
         if (!isCompactMode()) {

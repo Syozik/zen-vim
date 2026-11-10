@@ -88,3 +88,8 @@ export function setDepth(tab, depth) {
 export function getTranslationActor() {
     return TranslationsParent.getTranslationsActor(gBrowser.selectedBrowser);
 }
+
+export function isDigit(k) {
+    return "0" <= k && k <= "9";
+}
+
