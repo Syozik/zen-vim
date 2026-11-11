@@ -11,7 +11,7 @@ let palette, input, commandsBlock, selectedIdx, activeCommand;
 
 const inputPlaceholder = "Execute a command";
 
-export function createCmdPalette() {
+function createCmdPalette() {
     palette = document.createElement("div");
     palette.id = "zv-command-palette";
     palette.className = "d-none";
@@ -38,7 +38,6 @@ export function createCmdPalette() {
             hideCommandPalette();
         }
     });
-    setupPaletteKeyListeners();
     return palette;
 }
 
@@ -97,7 +96,8 @@ function onCmdInput() {
     displayCommands(displayedCommands);
 }
 
-function setupPaletteKeyListeners() {
+export function setupCommandPalette() {
+    createCmdPalette();
     addKeyListener("tab", "ctrl-shift-:", () => {
         showCommandPalette();
         return true;

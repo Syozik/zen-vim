@@ -1,3 +1,5 @@
+import { isDigit, state } from "./helpers.mjs";
+
 export const fnKeys = new Set(["Control", "Shift", "Meta", "Alt"]);
 
 export function getKey(ev) {
@@ -55,8 +57,63 @@ function addHoldListener() {
     document.addEventListener("keyup", () => (holdingKey = null));
 }
 
-addHoldListener();
-
 export function isHolding(key) {
     return holdingKey?.includes(key);
+}
+
+function onKeyDown(ev) {
+    if (fnKeys.has(ev.key)) return;
+    state.pressedHistory.push(getKey(ev));
+    if (state.pressedHistory.length >= 100)
+        state.pressedHistory.splice(0, 100);
+    const stop = () => {
+        ev.preventDefault();
+        ev.stopPropagation();
+    };
+
+    const globalHandlers = listenerHandlers["*"];
+    if (globalHandlers["*"]?.some((fn) => fn())) {
+        return;
+    }
+
+    const historyLength = state.pressedHistory.length;
+    const handlers = listenerHandlers[state.focus];
+    let foundKey = false;
+    for (let length = Math.min(3, historyLength); length >= 1; length--) {
+        const key = state.pressedHistory
+            .slice(historyLength - length)
+            .join(" ");
+
+        const digits = [];
+        let i = historyLength - length - 1;
+        while (i >= 0 && isDigit(state.pressedHistory[i])) {
+            digits.push(state.pressedHistory[i]);
+            i -= 1;
+        }
+        const multiplier = parseInt(digits.reverse().join("")) || undefined;
+
+        if (key in globalHandlers) {
+            stop();
+            if (globalHandlers[key].some((fn) => fn(multiplier))) {
+                return;
+            }
+        }
+
+        if (handlers && !handlers["*"]?.some((fn) => fn(multiplier))) {
+            if (key in handlers) {
+                stop();
+                handlers[key].some((fn) => fn(multiplier));
+                foundKey = true;
+                break;
+            }
+        }
+    }
+    if (handlers && !foundKey) {
+        handlers["!"]?.some((fn) => fn());
+    }
+}
+
+export function setupKeyboard() {
+    addHoldListener();
+    window.addEventListener("keydown", onKeyDown, true);
 }
