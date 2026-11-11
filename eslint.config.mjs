@@ -21,6 +21,7 @@ export default [
                 gZenGlanceManager: "readonly",
                 TranslationsParent: "readonly",
                 SessionWindowUI: "readonly",
+                ScreenshotsUtils: "readonly",
                 SessionStore: "readonly",
                 Services: "readonly",
                 ChromeUtils: "readonly",

@@ -3,6 +3,7 @@ import {
     getUrl,
     state,
     triggeringPrincipal,
+    doAction,
 } from "./helpers.mjs";
 import { addKeyListener } from "./keyboard.mjs";
 
@@ -108,7 +109,7 @@ function setupPaletteKeyListeners() {
         const length = commandsBlock.querySelectorAll(":scope > *").length;
         selectedIdx = (selectedIdx + step + length) % length;
         markFocusedCommand();
-    }
+    };
     addKeyListener("cmd_palette", "ArrowUp", () => moveWithStep(-1));
     addKeyListener("cmd_palette", "ctrl-p", () => moveWithStep(-1));
     addKeyListener("cmd_palette", "ArrowDown", () => moveWithStep(1));
@@ -256,6 +257,22 @@ async function togglePageTranslation() {
     }
 }
 
+async function takeScreenshot(region = "Visible") {
+    const browser = gBrowser.selectedBrowser;
+    const SSUtils = ScreenshotsUtils;
+    await SSUtils.showPanelAndOverlay(browser, "ToolbarButton");
+    try {
+        await SSUtils.takeScreenshot(browser, region);
+    } finally {
+        await ScreenshotsUtils.closePanel(browser);
+    }
+    const blobURL = SSUtils.browserToScreenshotsState.get(browser)?.blobURL;
+    if (blobURL) {
+        await SSUtils.copyScreenshotFromBlobURL(blobURL, browser, "PreviewCopy");
+    }
+    SSUtils.exit(browser);
+}
+
 const commandsList = {
     glance: {
         string: "Glance: preview a page",
@@ -278,9 +295,27 @@ const commandsList = {
         string: "Theme: toggle mode",
         fn: toggleTheme,
     },
+    screenshot_visible: {
+        string: "Screenshot: save visible",
+        fn: () => takeScreenshot("Visible"),
+    },
+    screenshot_page: {
+        string: "Screenshot: save full page",
+        fn: () => takeScreenshot("FullPage"),
+    },
+    screenshot_tool: {
+        string: "Screenshot: open tool",
+        fn: () => doAction("Browser:Screenshot"),
+    },
     preferences: page("Preferences: open", "about:preferences"),
-    preferences_search: page("Preferences: search engines", "about:preferences#search"),
-    preferences_privacy: page("Preferences: privacy & security", "about:preferences#privacy"),
+    preferences_search: page(
+        "Preferences: search engines",
+        "about:preferences#search",
+    ),
+    preferences_privacy: page(
+        "Preferences: privacy & security",
+        "about:preferences#privacy",
+    ),
     preferences_sync: page("Preferences: sync", "about:preferences#sync"),
     downloads: page("Downloads: open", "about:downloads"),
     pdf: page("PDF tool: open", "about:pdf"),

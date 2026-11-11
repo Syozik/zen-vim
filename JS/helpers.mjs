@@ -97,3 +97,7 @@ export function isDigit(k) {
     return "0" <= k && k <= "9";
 }
 
+export function doAction(id) {
+    const action = document.getElementById(id);
+    return action?.doCommand();
+}

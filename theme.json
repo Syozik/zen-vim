@@ -3,7 +3,7 @@
   "name": "Zen Vim",
   "description": "Vim motions for Zen Browser tabs and splits + tree view for the tabs.",
   "author": "Serhii Rubanskyi",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "homepage": "https://github.com/syozik/zen-vim/tree/master",
   "readme": "https://raw.githubusercontent.com/syozik/zen-vim/master/README.md",
   "createdAt": "2026-10-08",
