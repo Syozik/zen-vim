@@ -215,11 +215,11 @@ import { setupTree } from "./tree.mjs";
             return true;
         }
     });
-    addKeyListener("glance", "ctrl-w Escape", async () => {
+    addKeyListener("glance", "ctrl-w escape", async () => {
         await dismissGlance();
         exit();
     });
-    addKeyListener("glance", "ctrl-w Enter", async () => {
+    addKeyListener("glance", "ctrl-w enter", async () => {
         glanceOwner = null;
         await gZenGlanceManager.fullyOpenGlance();
         exit();
@@ -251,7 +251,7 @@ import { setupTree } from "./tree.mjs";
         goTo(i);
     };
 
-    addKeyListener("sidebar", ["d", "shift-D"], deleteSelectedTab);
+    addKeyListener("sidebar", ["d", "shift-d"], deleteSelectedTab);
 
     addKeyListener("sidebar", "v", () => {
         if (
@@ -287,7 +287,7 @@ import { setupTree } from "./tree.mjs";
     };
 
     addKeyListener("sidebar", "g g", () => goTo(0));
-    addKeyListener("sidebar", "shift-G", () => goTo(tabs.length - 1));
+    addKeyListener("sidebar", "shift-g", () => goTo(tabs.length - 1));
     addKeyListener("sidebar", "space", preview);
     addKeyListener("sidebar", "r", () => {
         state.currentTab
@@ -313,7 +313,7 @@ import { setupTree } from "./tree.mjs";
         gZenUIManager.shakeElement(tab);
     });
 
-    addKeyListener("sidebar", "Enter", async () => {
+    addKeyListener("sidebar", "enter", async () => {
         gBrowser.selectedTab = state.currentTab;
         exit();
     });
@@ -323,7 +323,7 @@ import { setupTree } from "./tree.mjs";
         toggleFold(state.currentTab);
     });
 
-    addKeyListener("sidebar", "Escape", exit);
+    addKeyListener("sidebar", "escape", exit);
     addKeyListener("sidebar", "j", (step = 1) => goWithStep(step));
     addKeyListener("sidebar", "k", (step = 1) => goWithStep(-step));
     addKeyListener("sidebar", "h", (step = 1) => goWithStep(-step));

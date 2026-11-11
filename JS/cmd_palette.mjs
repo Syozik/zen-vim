@@ -103,19 +103,19 @@ function setupPaletteKeyListeners() {
         return true;
     });
 
-    addKeyListener("cmd_palette", "Escape", hideCommandPalette);
+    addKeyListener("cmd_palette", "escape", hideCommandPalette);
 
     const moveWithStep = (step) => {
         const length = commandsBlock.querySelectorAll(":scope > *").length;
         selectedIdx = (selectedIdx + step + length) % length;
         markFocusedCommand();
     };
-    addKeyListener("cmd_palette", "ArrowUp", () => moveWithStep(-1));
+    addKeyListener("cmd_palette", "arrowup", () => moveWithStep(-1));
     addKeyListener("cmd_palette", "ctrl-p", () => moveWithStep(-1));
-    addKeyListener("cmd_palette", "ArrowDown", () => moveWithStep(1));
+    addKeyListener("cmd_palette", "arrowdown", () => moveWithStep(1));
     addKeyListener("cmd_palette", "ctrl-n", () => moveWithStep(1));
 
-    addKeyListener("cmd_palette", "Enter", () => {
+    addKeyListener("cmd_palette", "enter", () => {
         let cmdId = commandsBlock.querySelector(".selected").dataset.cmdId;
         if (!activeCommand.classList.contains("d-none")) {
             cmdId = activeCommand.textContent;

@@ -8,7 +8,7 @@ export function getKey(ev) {
     if (ev.altKey) keys.push("alt");
     if (ev.metaKey) keys.push("meta");
     if (ev.key == " ") keys.push("space");
-    else if (!fnKeys.has(ev.key)) keys.push(ev.key);
+    else if (!fnKeys.has(ev.key)) keys.push(ev.key.toLowerCase());
 
     return keys.join("-");
 }
