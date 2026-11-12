@@ -1,10 +1,15 @@
 # zen-vim
 
-Vim motions for Zen Browser tabs and splits.
-This mod also features:
+Vim motions, tree view, and command palette for Zen Browser tabs and splits.
 
-- Transform the tab sidebar into a tree view - meaning tabs are grouped by a parent from which they were opened
-- Command palette (ctrl-shift-:)
+<p align="center">
+  <img width="700" alt="preview" src="https://github.com/user-attachments/assets/aaa49a21-ecb4-4b30-9771-878c136034d5" />
+</p>
+
+This mod features:
+- Navigate in your sidebar with typical vim motions (h, j, k, l)
+- Transform the tab sidebar into a tree view - tabs are grouped by a parent from which they were opened
+- Command palette
 
 It's packaged for [Sine](https://github.com/CosmoCreeper/Sine) with a manual [fx-autoconfig](https://github.com/MrOtherGuy/fx-autoconfig) option.
 

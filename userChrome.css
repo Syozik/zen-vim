@@ -61,7 +61,7 @@
     }
 
     .tabbrowser-tab.folded & {
-        rotate: none;
+        rotate: 90deg;
     }
 }
 
