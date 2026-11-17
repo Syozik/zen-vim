@@ -317,6 +317,7 @@ const commandsList = {
         "about:preferences#privacy",
     ),
     preferences_sync: page("Preferences: sync", "about:preferences#sync"),
+    translation: page("Translate: open tool", "about:translations#trg=en"),
     downloads: page("Downloads: open", "about:downloads"),
     pdf: page("PDF tool: open", "about:pdf"),
     task_manager: page("Task Manager: open", "about:processes"),
