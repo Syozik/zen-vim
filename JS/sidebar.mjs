@@ -83,13 +83,15 @@ export function setupSidebar() {
 
     addKeyListener("sidebar", "v", () => {
         const tab = state.currentTab;
-        if (tab.group && tab.group?.hasAttribute("split-view-group")) {
+        if (tab.group?.hasAttribute("split-view-group")) {
             gZenViewSplitter.removeTabFromGroup(tab, undefined, {
                 forUnsplit: true,
             });
         } else {
             const other =
-                tab === gBrowser.selectedTab ? gBrowser.duplicateTab(tab) : tab;
+                tab === gBrowser.selectedTab
+                    ? gBrowser.duplicateTab(tab)
+                    : gBrowser.selectedTab;
             gZenViewSplitter.splitTabs([tab, other], undefined, 1);
         }
         exit();
