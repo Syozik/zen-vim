@@ -1,0 +1,958 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>zen-vim guide</title>
+        <meta
+            name="description"
+            content="Every key and command of zen-vim: vim motions, tree tabs and a command palette for Zen Browser."
+        />
+        <style>
+            :root {
+                color-scheme: light dark;
+                --bg: #f6f4ee;
+                --panel: #fffdf8;
+                --text: #23211c;
+                --muted: #6d685c;
+                --line: #dcd7c9;
+                --accent: #2f7d4f;
+                --key-bg: #ebe7da;
+            }
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --bg: #16181a;
+                    --panel: #1d2023;
+                    --text: #e4e2dc;
+                    --muted: #96938a;
+                    --line: #32363a;
+                    --accent: #7fd39f;
+                    --key-bg: #2a2e32;
+                }
+            }
+            * {
+                box-sizing: border-box;
+            }
+            html {
+                scroll-behavior: smooth;
+            }
+            body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--text);
+                font:
+                    16px/1.6 system-ui,
+                    -apple-system,
+                    "Segoe UI",
+                    sans-serif;
+            }
+            main {
+                max-width: 52rem;
+                margin: 0 auto;
+                padding: 1rem 1rem 5rem;
+            }
+            .toc {
+                margin: 2rem 0;
+                font-size: 0.9rem;
+            }
+            .toc h2 {
+                margin: 0 0 0.6rem;
+                padding: 0;
+                border: 0;
+                font-size: 0.75rem;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+                color: var(--muted);
+            }
+            .toc h2::before {
+                content: none;
+            }
+            .toc ol {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+                border-left: 1px solid var(--line);
+            }
+            .toc a {
+                display: block;
+                margin-left: -1px;
+                padding: 0.2rem 0 0.2rem 0.9rem;
+                border-left: 1px solid transparent;
+                color: var(--muted);
+                text-decoration: none;
+            }
+            .toc a:hover,
+            .toc a:focus-visible {
+                color: var(--text);
+            }
+            .toc a.active {
+                color: var(--accent);
+                border-left-color: var(--accent);
+            }
+            @media (min-width: 64rem) {
+                main {
+                    max-width: 69rem;
+                    padding-right: 18rem;
+                }
+                .toc {
+                    position: fixed;
+                    top: 3.5rem;
+                    right: max(1rem, calc(50% - 33.5rem));
+                    width: 15rem;
+                    max-height: calc(100vh - 5rem);
+                    overflow-y: auto;
+                    margin: 0;
+                }
+            }
+            h1,
+            h2,
+            h3 {
+                line-height: 1.25;
+                text-wrap: balance;
+            }
+            h1 {
+                margin: 2.5rem 0 0.5rem;
+                font:
+                    700 2.25rem ui-monospace,
+                    "JetBrains Mono",
+                    Menlo,
+                    Consolas,
+                    monospace;
+            }
+            h2 {
+                margin: 3.5rem 0 0.75rem;
+                padding-bottom: 0.4rem;
+                border-bottom: 1px solid var(--line);
+                font-size: 1.4rem;
+            }
+            h2::before {
+                content: "~ ";
+                color: var(--accent);
+                font-family: ui-monospace, monospace;
+            }
+            h3 {
+                margin: 2rem 0 0.5rem;
+                font-size: 1.05rem;
+            }
+            p,
+            li {
+                max-width: 65ch;
+            }
+            .lead {
+                font-size: 1.1rem;
+                color: var(--muted);
+            }
+            a {
+                color: var(--accent);
+            }
+            .table {
+                overflow-x: auto;
+                margin: 1rem 0;
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                background: var(--panel);
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.95rem;
+            }
+            th,
+            td {
+                padding: 0.55rem 0.9rem;
+                text-align: left;
+                vertical-align: top;
+                border-bottom: 1px solid var(--line);
+            }
+            tr:last-child td {
+                border-bottom: 0;
+            }
+            th {
+                font-size: 0.75rem;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+                color: var(--muted);
+            }
+            td:first-child,
+            td:nth-child(3) {
+                white-space: nowrap;
+            }
+            kbd,
+            code,
+            pre {
+                font-family:
+                    ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+                font-size: 0.875em;
+            }
+            kbd {
+                display: inline-block;
+                min-width: 1.6em;
+                padding: 0.05em 0.45em;
+                text-align: center;
+                background: var(--key-bg);
+                border: 1px solid var(--line);
+                border-bottom-width: 2px;
+                border-radius: 5px;
+            }
+            code {
+                padding: 0.1em 0.35em;
+                background: var(--key-bg);
+                border-radius: 4px;
+            }
+            pre {
+                overflow-x: auto;
+                padding: 0.9rem 1rem;
+                background: var(--panel);
+                border: 1px solid var(--line);
+                border-radius: 8px;
+            }
+            pre code {
+                padding: 0;
+                background: none;
+            }
+            .note {
+                margin: 1rem 0;
+                padding: 0.7rem 1rem;
+                border-left: 3px solid var(--accent);
+                background: var(--panel);
+                border-radius: 0 8px 8px 0;
+            }
+            .note p {
+                margin: 0;
+            }
+            .preview {
+                display: block;
+                width: 100%;
+                max-width: 700px;
+                margin: 1.5rem 0;
+                border: 1px solid var(--line);
+                border-radius: 8px;
+            }
+            footer {
+                margin-top: 4rem;
+                color: var(--muted);
+                font-size: 0.9rem;
+            }
+        </style>
+    </head>
+    <body>
+        <main id="top">
+            <h1>zen-vim</h1>
+            <p class="lead">
+                Vim motions, tree tabs and a command palette for the Zen Browser
+                UI. This page lists every key and command and what it does.
+            </p>
+            <p>
+                It only handles the browser's own UI, meaning the sidebar,
+                splits and glance. For vim keys inside web pages, install
+                <a href="https://github.com/philc/vimium">Vimium</a>.
+            </p>
+
+            <img
+                class="preview"
+                alt="Zen Browser with the zen-vim tree sidebar"
+                src="preview.png"
+            />
+
+            <nav class="toc" aria-labelledby="toc-title">
+                <h2 id="toc-title">On this page</h2>
+                <ol>
+                    <li><a href="#install">Install</a></li>
+                    <li><a href="#modes">Modes</a></li>
+                    <li><a href="#anywhere">ctrl-w keys in page mode</a></li>
+                    <li><a href="#sidebar">Sidebar mode</a></li>
+                    <li><a href="#tree">Tree tabs</a></li>
+                    <li><a href="#palette">Command palette</a></li>
+                    <li><a href="#glance">Glance</a></li>
+                    <li><a href="#extend">Custom keys and commands</a></li>
+                </ol>
+            </nav>
+
+            <h2 id="install">Install</h2>
+
+            <h3>With Sine</h3>
+            <ol>
+                <li>
+                    Install
+                    <a href="https://github.com/CosmoCreeper/Sine">Sine</a> and
+                    restart Zen.
+                </li>
+                <li>
+                    Open <b>Zen Settings → Sine Mods</b> and enable JavaScript
+                    from unofficial sources.
+                </li>
+                <li>
+                    Install this repository:
+                    <code>https://github.com/syozik/zen-vim/tree/master</code>
+                </li>
+                <li>Restart Zen.</li>
+            </ol>
+
+            <h3>Manually, with fx-autoconfig</h3>
+            <ol>
+                <li>
+                    Clone the repo as the <code>chrome</code> folder of your Zen
+                    profile. <code>about:profiles</code> shows the profile path.
+                    <pre><code>git clone https://github.com/Syozik/zen-vim.git ~/.config/zen/&lt;profile&gt;/chrome</code></pre>
+                </li>
+                <li>
+                    Copy the two loader files from <code>program/</code> into
+                    the Zen install directory, for example
+                    <code>/opt/zen-browser-bin</code>:
+                    <ul>
+                        <li>
+                            <code>config.js</code> goes next to the
+                            <code>zen-bin</code> executable
+                        </li>
+                        <li>
+                            <code>config-prefs.js</code> goes into
+                            <code>defaults/pref</code>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    Restart Zen. If the scripts don't load, open
+                    <code>about:support</code> and click
+                    <b>Clear startup cache</b>.
+                </li>
+            </ol>
+            <div class="note">
+                <p>
+                    If tabs are not indented and the cursor tab has no
+                    highlight, Zen is ignoring <code>userChrome.css</code>. Set
+                    <code
+                        >toolkit.legacyUserProfileCustomizations.stylesheets</code
+                    >
+                    to <code>true</code> in <code>about:config</code>.
+                </p>
+            </div>
+
+            <h2 id="modes">Modes</h2>
+            <p>
+                A key does different things depending on the mode you are in.
+                <kbd>d</kbd> types a letter on a page and closes a tab in the
+                sidebar.
+            </p>
+            <div class="table">
+                <table>
+                    <tr>
+                        <th>Mode</th>
+                        <th>You are here when</th>
+                        <th>Leave with</th>
+                    </tr>
+                    <tr>
+                        <td>Page</td>
+                        <td>Normal browsing. This is the default.</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Sidebar</td>
+                        <td>
+                            You pressed <kbd>ctrl</kbd>+<kbd>w</kbd>
+                            <kbd>h</kbd> to browse tabs.
+                        </td>
+                        <td><kbd>Esc</kbd> or a click anywhere</td>
+                    </tr>
+                    <tr>
+                        <td>Command palette</td>
+                        <td>You pressed <kbd>ctrl</kbd>+<kbd>:</kbd>.</td>
+                        <td><kbd>Esc</kbd> or a click outside</td>
+                    </tr>
+                    <tr>
+                        <td>Glance</td>
+                        <td>A glance preview is open.</td>
+                        <td><kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>Esc</kbd></td>
+                    </tr>
+                </table>
+            </div>
+            <p>
+                To type <kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>h</kbd>, press
+                <kbd>Ctrl</kbd>+<kbd>w</kbd>, let go, then press <kbd>h</kbd>.
+                You can also keep <kbd>Ctrl</kbd> held for the second key.
+            </p>
+
+            <h2 id="anywhere">Ctrl-w keys in page mode</h2>
+            <div class="table">
+                <table>
+                    <tr>
+                        <th>Key</th>
+                        <th>Action</th>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd>+<kbd>w</kbd></td>
+                        <td>
+                            Close the current tab. A pinned tab goes back to its
+                            pinned page instead of closing. The tab closes after
+                            a quarter of a second, because the mod first waits
+                            for a second key.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>c</kbd></td>
+                        <td>Close the current tab right away, no pause.</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>h</kbd>
+                            <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd>
+                        </td>
+                        <td>
+                            Focus the split pane to the left, below, above or
+                            right.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>h</kbd></td>
+                        <td>
+                            When there is no pane further left, enter
+                            <a href="#sidebar">sidebar mode</a>. If your sidebar
+                            is on the right, <kbd>Ctrl</kbd>+<kbd>w</kbd>
+                            <kbd>l</kbd> does this instead.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>m</kbd></td>
+                        <td>
+                            Take the current tab out of its split, so it fills
+                            the window.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>v</kbd></td>
+                        <td>
+                            Ask for a URL or search, then open it in a split
+                            next to the current tab.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>g</kbd></td>
+                        <td>
+                            Ask for a URL or search, then open it as a
+                            <a href="#glance">glance</a>.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>t</kbd></td>
+                        <td>
+                            Translate the page into your language. Press again
+                            to restore the original.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>s</kbd></td>
+                        <td>
+                            Show or hide the sidebar by toggling compact mode.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>a</kbd>
+                            <kbd>i</kbd>
+                        </td>
+                        <td>
+                            Ask for a question, then open a new Claude chat with
+                            it.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd>+<kbd>:</kbd></td>
+                        <td>
+                            Open the <a href="#palette">command palette</a>. On
+                            a US layout that is
+                            <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>;</kbd>.
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <h2 id="sidebar">Sidebar mode</h2>
+            <p>
+                Enter with <kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>h</kbd>, or with
+                <kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>l</kbd> if your sidebar is on
+                the right. The
+                highlighted tab is your cursor. Moving it does not switch tabs
+                until you press <kbd>Enter</kbd>. In compact mode the sidebar
+                slides in while you browse and hides again when you leave.
+            </p>
+
+            <h3>Move</h3>
+            <div class="table">
+                <table>
+                    <tr>
+                        <th>Key</th>
+                        <th>Action</th>
+                    </tr>
+                    <tr>
+                        <td><kbd>j</kbd> / <kbd>l</kbd></td>
+                        <td>Next tab</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>k</kbd> / <kbd>h</kbd></td>
+                        <td>Previous tab</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>5</kbd> <kbd>j</kbd></td>
+                        <td>
+                            Type a number first to jump that many tabs. Works
+                            with <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd>
+                            <kbd>l</kbd>.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>g</kbd> <kbd>g</kbd></td>
+                        <td>First tab</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>G</kbd></td>
+                        <td>Last tab</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Enter</kbd></td>
+                        <td>
+                            Switch to the highlighted tab and leave sidebar mode
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Esc</kbd></td>
+                        <td>Leave sidebar mode without switching</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>q</kbd></td>
+                        <td>
+                            Leave and turn compact mode on, which hides the
+                            sidebar
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <h3>Act on the highlighted tab</h3>
+            <div class="table">
+                <table>
+                    <tr>
+                        <th>Key</th>
+                        <th>Action</th>
+                    </tr>
+                    <tr>
+                        <td><kbd>d</kbd></td>
+                        <td>
+                            Close the tab. Its nested tabs move up one level.
+                            This closes pinned tabs too.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>D</kbd></td>
+                        <td>
+                            Close the tab together with all tabs nested under
+                            it.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>u</kbd></td>
+                        <td>Reopen the last closed tab.</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>r</kbd></td>
+                        <td>
+                            Rename the tab. Type the new name and press
+                            <kbd>Enter</kbd>.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>y</kbd></td>
+                        <td>Copy the tab's URL and leave sidebar mode.</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>v</kbd></td>
+                        <td>
+                            Split the tab with the tab you are viewing. If it is
+                            already in a split, take it out. If the cursor is on
+                            the tab you are viewing, it is split with a
+                            duplicate of itself.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Space</kbd></td>
+                        <td>
+                            Preview the tab in a
+                            <a href="#glance">glance</a> without switching to
+                            it.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>z</kbd></td>
+                        <td>Fold or unfold the tabs nested under this tab.</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>p</kbd></td>
+                        <td>
+                            Move the tab one level up in the tree. Its nested
+                            tabs come with it.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>t</kbd></td>
+                        <td>
+                            Move the tab to the top level of the tree. Its
+                            nested tabs come with it.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>c</kbd></td>
+                        <td>
+                            Move the tab's children up one level. The tab itself
+                            stays.
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <h2 id="tree">Tree tabs</h2>
+            <p>
+                The sidebar is a tree. When you open a link in a new tab, the
+                new tab nests under the tab it came from.
+            </p>
+            <ul>
+                <li>
+                    A tab with nested tabs gets a small fold button. Click it,
+                    or press <kbd>z</kbd> in sidebar mode.
+                </li>
+                <li>
+                    Closing a parent keeps its nested tabs and moves them up one
+                    level.
+                </li>
+                <li>
+                    To close a parent and everything under it, hold
+                    <kbd>Shift</kbd> while clicking the close button, or press
+                    <kbd>D</kbd> in sidebar mode.
+                </li>
+                <li>
+                    Reopening a parent you closed that way brings its nested
+                    tabs back too.
+                </li>
+                <li>
+                    A dragged tab lands at the top level, and its nested tabs
+                    move up one level.
+                </li>
+                <li>
+                    Pinned tabs and essentials stay flat. Tabs opened from them
+                    do not nest.
+                </li>
+                <li>The tree survives a restart.</li>
+            </ul>
+
+            <h2 id="palette">Command palette</h2>
+            <p>Open with <kbd>Ctrl</kbd>+<kbd>:</kbd> from page mode.</p>
+            <div class="table">
+                <table>
+                    <tr>
+                        <th>Key</th>
+                        <th>Action</th>
+                    </tr>
+                    <tr>
+                        <td>typing</td>
+                        <td>
+                            Filter the list. Matches any part of a command name,
+                            ignoring case.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>↓</kbd> / <kbd>Ctrl</kbd>+<kbd>n</kbd></td>
+                        <td>Next command</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>↑</kbd> / <kbd>Ctrl</kbd>+<kbd>p</kbd></td>
+                        <td>Previous command</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Enter</kbd></td>
+                        <td>
+                            Run the selected command. Clicking a command runs it
+                            too.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Esc</kbd></td>
+                        <td>Close the palette</td>
+                    </tr>
+                </table>
+            </div>
+            <p>The palette lists the commands you used most recently first.</p>
+            <div class="note">
+                <p>
+                    Glance, Split and Claude ask for input. After you pick one,
+                    the palette clears and waits for you to type and press
+                    <kbd>Enter</kbd>. Glance and Split open text like
+                    <code>github.com</code> as an address and send anything else
+                    to Google.
+                </p>
+            </div>
+
+            <h3>All commands</h3>
+            <div class="table">
+                <table>
+                    <tr>
+                        <th>Command</th>
+                        <th>What it does</th>
+                        <th>Shortcut</th>
+                    </tr>
+                    <tr>
+                        <td>Glance: preview a page</td>
+                        <td>
+                            Asks for a URL or search and opens it in a glance.
+                        </td>
+                        <td><kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>g</kbd></td>
+                    </tr>
+                    <tr>
+                        <td>Split: open a new page in the split view</td>
+                        <td>
+                            Asks for a URL or search and opens it beside the
+                            current tab.
+                        </td>
+                        <td><kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>v</kbd></td>
+                    </tr>
+                    <tr>
+                        <td>Claude: open a new claude chat…</td>
+                        <td>
+                            Asks for a question and opens it in a new Claude
+                            chat.
+                        </td>
+                        <td>
+                            <kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>a</kbd>
+                            <kbd>i</kbd>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Translate: toggle page translation</td>
+                        <td>
+                            Translates the page into your language, or restores
+                            the original.
+                        </td>
+                        <td><kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>t</kbd></td>
+                    </tr>
+                    <tr>
+                        <td>Translate: open tool</td>
+                        <td>Opens <code>about:translations</code>.</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Sidebar: toggle (show/hide)</td>
+                        <td>Turns compact mode on or off.</td>
+                        <td><kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>s</kbd></td>
+                    </tr>
+                    <tr>
+                        <td>Theme: toggle mode</td>
+                        <td>Switches between the dark and light theme.</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Add current tab to essentials</td>
+                        <td>Adds the current tab to Zen essentials.</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Screenshot: save visible</td>
+                        <td>
+                            Screenshots the visible part of the page and copies
+                            it to the clipboard.
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Screenshot: save full page</td>
+                        <td>
+                            Screenshots the whole page and copies it to the
+                            clipboard.
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Screenshot: open tool</td>
+                        <td>
+                            Opens the built-in screenshot tool to pick an area.
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Tree: promote tab one level higher</td>
+                        <td>Moves the current tab up one level in the tree.</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Tree: promote tab to the top</td>
+                        <td>Moves the current tab to the top level.</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Tree: promote tab's children</td>
+                        <td>Moves the current tab's children up one level.</td>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+
+            <h3>Commands that open a browser page</h3>
+            <div class="table">
+                <table>
+                    <tr>
+                        <th>Command</th>
+                        <th>Opens</th>
+                    </tr>
+                    <tr>
+                        <td>Preferences: open</td>
+                        <td><code>about:preferences</code></td>
+                    </tr>
+                    <tr>
+                        <td>Preferences: search engines</td>
+                        <td><code>about:preferences#search</code></td>
+                    </tr>
+                    <tr>
+                        <td>Preferences: privacy &amp; security</td>
+                        <td><code>about:preferences#privacy</code></td>
+                    </tr>
+                    <tr>
+                        <td>Preferences: sync</td>
+                        <td><code>about:preferences#sync</code></td>
+                    </tr>
+                    <tr>
+                        <td>Downloads: open</td>
+                        <td><code>about:downloads</code></td>
+                    </tr>
+                    <tr>
+                        <td>PDF tool: open</td>
+                        <td><code>about:pdf</code></td>
+                    </tr>
+                    <tr>
+                        <td>Task Manager: open</td>
+                        <td><code>about:processes</code></td>
+                    </tr>
+                    <tr>
+                        <td>Tabs: unload to free memory</td>
+                        <td><code>about:unloads</code></td>
+                    </tr>
+                    <tr>
+                        <td>Add-ons: manage</td>
+                        <td><code>about:addons</code></td>
+                    </tr>
+                    <tr>
+                        <td>Passwords: open</td>
+                        <td><code>about:logins</code></td>
+                    </tr>
+                    <tr>
+                        <td>Config: open</td>
+                        <td><code>about:config</code></td>
+                    </tr>
+                    <tr>
+                        <td>Shortcuts: edit</td>
+                        <td><code>about:keyboard</code></td>
+                    </tr>
+                    <tr>
+                        <td>Profiles: manage</td>
+                        <td><code>about:profiles</code></td>
+                    </tr>
+                    <tr>
+                        <td>Privacy: protections dashboard</td>
+                        <td><code>about:protections</code></td>
+                    </tr>
+                    <tr>
+                        <td>Troubleshooting: info</td>
+                        <td><code>about:support</code></td>
+                    </tr>
+                    <tr>
+                        <td>Debugging: extensions &amp; workers</td>
+                        <td><code>about:debugging</code></td>
+                    </tr>
+                    <tr>
+                        <td>Memory: report</td>
+                        <td><code>about:memory</code></td>
+                    </tr>
+                    <tr>
+                        <td>Policies: view</td>
+                        <td><code>about:policies</code></td>
+                    </tr>
+                </table>
+            </div>
+
+            <h2 id="glance">Glance</h2>
+            <p>
+                A glance is a floating preview on top of the current tab. Open
+                one with <kbd>Space</kbd> on a tab in sidebar mode, or with
+                <kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>g</kbd> for a new page.
+            </p>
+            <div class="table">
+                <table>
+                    <tr>
+                        <th>Key</th>
+                        <th>Action</th>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>Esc</kbd></td>
+                        <td>
+                            Close the glance. A previewed tab goes back to its
+                            place in the sidebar; a page opened with the Glance
+                            command is closed.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd>+<kbd>w</kbd> <kbd>Enter</kbd></td>
+                        <td>Open the glance as a regular tab.</td>
+                    </tr>
+                </table>
+            </div>
+
+            <h2 id="extend">Custom keys and commands</h2>
+            <p>
+                Call <code>addKeyListener</code> and
+                <code>addCommand</code> from any module under <code>JS/</code>.
+            </p>
+            <pre><code>import { addKeyListener } from "./keyboard.mjs";
+import { addCommand } from "./cmd_palette.mjs";
+
+// The first argument is the mode: "tab" for page mode, "sidebar", "glance",
+// "cmd_palette", or "*" for every mode.
+addKeyListener("sidebar", "x", () =&gt; console.log("x pressed"));
+
+// A palette command. `shortcut` and `takesArgs` are optional.
+addCommand("hello", {
+    string: "Hello: greet",          // the name shown in the palette
+    fn: (text) =&gt; console.log(text), // receives the typed input if takesArgs
+    takesArgs: true,
+    shortcut: "ctrl-w e",
+});</code></pre>
+            <p>
+                Write key names in lowercase with modifiers first, in the order
+                <code>ctrl-shift-alt-meta-key</code>. Separate the keys of a
+                sequence with spaces, as in <code>"g g"</code> or
+                <code>"ctrl-w a i"</code>. A sequence can be at most three keys
+                long. Space is <code>space</code> and capital G is
+                <code>shift-g</code>.
+            </p>
+
+            <footer>
+                <p>
+                    <a href="https://github.com/syozik/zen-vim"
+                        >zen-vim on GitHub</a
+                    >. Issues, ideas and pull requests are welcome.
+                </p>
+            </footer>
+        </main>
+        <script>
+            const links = [...document.querySelectorAll(".toc a")];
+            const heads = links.map((a) => document.querySelector(a.hash));
+            const mark = () => {
+                const atEnd =
+                    innerHeight + scrollY >=
+                    document.documentElement.scrollHeight - 2;
+                const i = atEnd
+                    ? heads.length - 1
+                    : heads.findLastIndex(
+                          (h) =>
+                              h.getBoundingClientRect().top < innerHeight / 3,
+                      );
+                links.forEach((a, j) => a.classList.toggle("active", j === i));
+            };
+            addEventListener("scroll", mark, { passive: true });
+            mark();
+        </script>
+    </body>
+</html>

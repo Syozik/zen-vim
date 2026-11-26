@@ -7,6 +7,7 @@ Vim motions, tree view, and command palette for Zen Browser tabs and splits.
 </p>
 
 This mod features:
+
 - Navigate in your sidebar with typical vim motions (h, j, k, l)
 - Transform the tab sidebar into a tree view - tabs are grouped by a parent from which they were opened
 - Command palette
@@ -51,17 +52,18 @@ https://github.com/user-attachments/assets/5b780c4b-b60b-4100-a27a-3cfde0032074
 
 _Note_: most likely (happened on my 2 machines) zen won't apply styles from userChrome.css if your `toolkit.legacyUserProfileCustomizations.stylesheets` is false. You may set it to true in about:config.
 
+All instructions are available here: https://syozik.github.io/zen-vim
+
 ### Keys
 
-| Key                               | Action                                            |
-| --------------------------------- | ------------------------------------------------- |
-| `Ctrl-W`                          | Close current tab (pinned tabs are reset instead) |
-| `Ctrl-W h/j/k/l`                  | Focus split in that direction                     |
-| `Ctrl-W h` (no split to the left) | Enter tab browsing mode                           |
-| `Ctrl-W c`                        | Close current tab                                 |
-| `Ctrl-W v`                        | Open current tab in the split view                |
-| `Ctrl-W m`                        | Maximize current tab (if in the split view)       |
-| `Ctrl-:`                          | Open command palette                              |
+| Key                                | Action                                              |
+| ---------------------------------- | --------------------------------------------------- |
+| `ctrl-w h/j/k/l`                   | Focus split in that direction                       |
+| `ctrl-w h` (no split to the left)  | Enter tab browsing mode                             |
+| `ctrl-w l` (no split to the right) | Enter tab browsing mode, if sidebar is on the right |
+| `ctrl-w c`                         | Close current tab                                   |
+| `ctrl-w m`                         | Maximize current tab (if in the split view)         |
+| `ctrl-:`                           | Open command palette                                |
 
 In tab browsing mode:
 
@@ -71,7 +73,7 @@ In tab browsing mode:
 | `k` / `h` | Previous tab                                              |
 | `g g`     | Go to the first tab                                       |
 | `G`       | Go to the last tab                                        |
-| `Enter`   | Select tab                                                |
+| `Enter`   | Open tab                                                  |
 | `r`       | Rename tab                                                |
 | `d`       | Close tab (promoting its nested tabs)                     |
 | `D`       | Close tab (together with its nested tabs)                 |
@@ -95,7 +97,6 @@ Available commands in the palette:
 | ---------------------- | ----------------------------------------- | ---------- |
 | Glance                 | Open a new glance                         | ctrl-w g   |
 | Split view             | Open a new split view                     | ctrl-w v   |
-| Claude                 | Open a new claude chat with your question | ctrl-w a i |
 | Preferences            | Go to the settings                        |            |
 | Translation            | Toggle the page translation               | ctrl-w t   |
 | Theme                  | Toggle the current theme                  |            |
@@ -104,9 +105,10 @@ Available commands in the palette:
 | Promote tab            | Move current nested tab one level higher  |            |
 | Promote tab to root    | Move current nested tab to the top        |            |
 | Promote tab's children | Move current nested tab to the top        |            |
+| Claude                 | Open a new claude chat with your question | ctrl-w a i |
 
 To move between commands in the palette use arrows or ctrl-n/ctrl-p.
-Commands in the palette are ordered: you last used command is at the top. 
+Commands in the palette are ordered: you last used command is at the top.
 
 Shortcuts when glance is open:
 
